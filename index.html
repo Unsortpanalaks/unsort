@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hafssa — Copenhagen, for real</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F5F0E8;
+    --ink: #1A1714;
+    --rust: #C4532A;
+    --rust-light: #E8846A;
+    --sand: #D9C9A8;
+    --sand-dark: #B8A070;
+    --green: #2D4A35;
+    --green-light: #4A7A58;
+    --muted: #6B5F52;
+    --white: #FDFAF5;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 3rem;
+    background: var(--cream);
+    border-bottom: 1.5px solid var(--ink);
+    mix-blend-mode: normal;
+  }
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--rust); }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-links a {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    background: var(--ink) !important;
+    color: var(--cream) !important;
+    padding: 0.55rem 1.4rem;
+    border-radius: 2px;
+  }
+  .nav-cta:hover { background: var(--rust) !important; color: var(--white) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    padding: 8rem 3rem 5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    border-bottom: 1.5px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: 'CPH';
+    position: absolute;
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 28vw;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--sand);
+    right: -5vw; top: 50%; transform: translateY(-50%);
+    letter-spacing: -0.05em;
+    pointer-events: none;
+    z-index: 0;
+    line-height: 1;
+  }
+  .hero-left { position: relative; z-index: 1; }
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--rust);
+    border: 1px solid var(--rust);
+    padding: 0.35rem 0.85rem;
+    border-radius: 2px;
+    margin-bottom: 1.8rem;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(3.2rem, 6vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--rust);
+  }
+  .hero-sub {
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 420px;
+    margin-bottom: 2.5rem;
+  }
+  .hero-sub strong { color: var(--ink); font-weight: 500; }
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+  .btn-primary {
+    display: inline-block;
+    background: var(--rust);
+    color: var(--white);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 1rem 2.2rem;
+    border-radius: 2px;
+    letter-spacing: 0.03em;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-primary:hover { background: var(--ink); transform: translateY(-1px); }
+  .btn-ghost {
+    display: inline-block;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 400;
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 2px;
+    transition: color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--rust); border-color: var(--rust); }
+  .hero-right { position: relative; z-index: 1; }
+  .hero-card-stack { position: relative; height: 500px; }
+  .hero-card {
+    position: absolute;
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--white);
+  }
+  .hero-card:nth-child(1) {
+    width: 72%; top: 0; left: 0;
+    transform: rotate(-3deg);
+  }
+  .hero-card:nth-child(2) {
+    width: 68%; top: 15%; right: 0;
+    transform: rotate(2.5deg);
+  }
+  .hero-card:nth-child(3) {
+    width: 55%; bottom: 0; left: 10%;
+    transform: rotate(-1deg);
+  }
+  .hero-card-inner {
+    padding: 0.75rem;
+  }
+  .hero-card-img {
+    width: 100%; aspect-ratio: 4/3;
+    background: var(--sand);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    margin-bottom: 0.6rem;
+  }
+  .hero-card-img svg { width: 60%; opacity: 0.3; }
+  .hero-card-label {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: -0.02em;
+  }
+  .hero-card-sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.1rem;
+  }
+  .hero-stats {
+    display: flex; gap: 2rem; margin-top: 3rem;
+  }
+  .hero-stat .num {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .hero-stat .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 0.15rem;
+  }
+
+  /* ── MARQUEE ── */
+  .marquee-strip {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0.9rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .marquee-inner {
+    display: inline-block;
+    animation: marquee 22s linear infinite;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    color: var(--sand);
+  }
+  .marquee-inner span { margin: 0 2.5rem; color: var(--rust); font-style: normal; font-weight: 700; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ── MANIFESTO ── */
+  .manifesto {
+    padding: 7rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 6rem;
+    border-bottom: 1.5px solid var(--ink);
+    align-items: start;
+  }
+  .manifesto-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .manifesto-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 6rem;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--sand-dark);
+  }
+  .manifesto-right h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+  .manifesto-right h2 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--rust);
+  }
+  .manifesto-right p {
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 600px;
+  }
+  .manifesto-right p + p { margin-top: 1rem; }
+
+  /* ── TOURS ── */
+  .tours-section {
+    padding: 7rem 3rem;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .section-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 4rem;
+  }
+  .section-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .section-title em { font-style: italic; font-weight: 300; color: var(--rust); }
+  .tours-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5px;
+    border: 1.5px solid var(--ink);
+  }
+  .tour-card {
+    background: var(--white);
+    padding: 2.5rem 2rem;
+    border-right: 1.5px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.25s;
+    cursor: pointer;
+  }
+  .tour-card:last-child { border-right: none; }
+  .tour-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 0;
+    background: var(--rust);
+    transition: height 0.3s cubic-bezier(0.4,0,0.2,1);
+    z-index: 0;
+  }
+  .tour-card:hover::after { height: 100%; }
+  .tour-card:hover .tour-content { position: relative; z-index: 1; color: var(--white); }
+  .tour-card:hover .tour-num { color: rgba(255,255,255,0.2); }
+  .tour-card:hover .tour-type { color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.4); }
+  .tour-card:hover .tour-title { color: var(--white); }
+  .tour-card:hover .tour-desc { color: rgba(255,255,255,0.8); }
+  .tour-card:hover .tour-meta-item { color: rgba(255,255,255,0.7); }
+  .tour-card:hover .tour-meta-item strong { color: var(--white); }
+  .tour-card:hover .tour-btn { background: var(--white); color: var(--rust); }
+  .tour-content { position: relative; z-index: 1; }
+  .tour-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 4rem;
+    line-height: 1;
+    color: var(--sand);
+    letter-spacing: -0.05em;
+    transition: color 0.25s;
+    margin-bottom: 1.5rem;
+  }
+  .tour-icon-wrap {
+    width: 52px; height: 52px;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.5rem;
+    transition: border-color 0.25s, background 0.25s;
+    font-size: 1.5rem;
+  }
+  .tour-card:hover .tour-icon-wrap { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); }
+  .tour-type {
+    display: inline-block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    border: 1px solid var(--sand-dark);
+    padding: 0.25rem 0.65rem;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    transition: all 0.25s;
+  }
+  .tour-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.6rem;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    transition: color 0.25s;
+  }
+  .tour-desc {
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    transition: color 0.25s;
+  }
+  .tour-meta {
+    display: flex; gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--sand);
+  }
+  .tour-card:hover .tour-meta { border-color: rgba(255,255,255,0.2); }
+  .tour-meta-item {
+    font-size: 0.78rem;
+    color: var(--muted);
+    transition: color 0.25s;
+  }
+  .tour-meta-item strong {
+    display: block;
+    font-size: 1rem;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    transition: color 0.25s;
+  }
+  .tour-btn {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--cream);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.75rem 1.6rem;
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  /* ── ABOUT ── */
+  .about-section {
+    padding: 7rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    border-bottom: 1.5px solid var(--ink);
+    align-items: center;
+  }
+  .about-visual {
+    position: relative;
+  }
+  .about-portrait {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: var(--sand);
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 6rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .about-portrait::after {
+    content: 'HAFSSA';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: var(--rust);
+    color: var(--white);
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-align: center;
+    padding: 1rem;
+  }
+  .about-badge {
+    position: absolute;
+    top: -1rem; right: -1rem;
+    width: 100px; height: 100px;
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    border: 2px solid var(--cream);
+  }
+  .about-content .section-label { margin-bottom: 0.5rem; }
+  .about-content h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  .about-content h2 em { font-style: italic; font-weight: 300; color: var(--rust); }
+  .about-content p {
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+  .about-content p strong { color: var(--ink); font-weight: 500; }
+  .about-bullets {
+    list-style: none;
+    margin: 1.5rem 0 2rem;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .about-bullets li {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  .about-bullets li::before {
+    content: '→';
+    color: var(--rust);
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  /* ── REVIEWS ── */
+  .reviews-section {
+    padding: 7rem 3rem;
+    border-bottom: 1.5px solid var(--ink);
+    background: var(--ink);
+  }
+  .reviews-section .section-label { color: var(--sand-dark); }
+  .reviews-section .section-title { color: var(--cream); }
+  .reviews-section .section-title em { color: var(--rust-light); }
+  .reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5px;
+    margin-top: 4rem;
+    border: 1.5px solid rgba(255,255,255,0.1);
+  }
+  .review-card {
+    padding: 2rem;
+    background: rgba(255,255,255,0.04);
+    border-right: 1.5px solid rgba(255,255,255,0.08);
+  }
+  .review-card:last-child { border-right: none; }
+  .review-stars {
+    color: var(--rust-light);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+  .review-text {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 1.1rem;
+    line-height: 1.65;
+    color: var(--cream);
+    margin-bottom: 1.5rem;
+  }
+  .review-author {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--sand-dark);
+  }
+  .review-author span { color: rgba(255,255,255,0.3); margin: 0 0.4rem; }
+  .reviews-cta {
+    text-align: center;
+    margin-top: 3.5rem;
+  }
+  .reviews-cta p {
+    color: var(--sand-dark);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── BOOKING ── */
+  .booking-section {
+    padding: 7rem 3rem;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .booking-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 6rem;
+    align-items: start;
+    margin-top: 4rem;
+  }
+  .booking-info h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+  .booking-info p {
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+  .booking-features {
+    display: flex; flex-direction: column; gap: 1.2rem;
+  }
+  .booking-feature {
+    display: flex; gap: 1rem; align-items: flex-start;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--sand);
+  }
+  .booking-feature:last-child { border-bottom: none; }
+  .feature-icon {
+    font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem;
+  }
+  .feature-text strong {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+  }
+  .feature-text span {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  .booking-form {
+    background: var(--white);
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    padding: 2.5rem;
+  }
+  .booking-form h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 2rem;
+  }
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+  .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    border: 1.5px solid var(--sand-dark);
+    border-radius: 2px;
+    padding: 0.75rem 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--rust);
+  }
+  .form-group textarea { resize: vertical; min-height: 90px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-submit {
+    width: 100%;
+    background: var(--rust);
+    color: var(--white);
+    border: none;
+    padding: 1.1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-radius: 2px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.2s;
+  }
+  .form-submit:hover { background: var(--ink); }
+  .form-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 1rem;
+  }
+
+  /* ── FAQ ── */
+  .faq-section {
+    padding: 7rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 6rem;
+    border-bottom: 1.5px solid var(--ink);
+    align-items: start;
+  }
+  .faq-list { display: flex; flex-direction: column; }
+  .faq-item {
+    border-top: 1.5px solid var(--ink);
+    overflow: hidden;
+  }
+  .faq-item:last-child { border-bottom: 1.5px solid var(--ink); }
+  .faq-q {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem 0;
+    cursor: pointer;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    user-select: none;
+  }
+  .faq-q::after {
+    content: '+';
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--rust);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .faq-item.open .faq-q::after { transform: rotate(45deg); }
+  .faq-a {
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.75;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding-bottom 0.35s;
+  }
+  .faq-item.open .faq-a {
+    max-height: 300px;
+    padding-bottom: 1.5rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 4rem 3rem 2rem;
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 4rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 2rem;
+  }
+  .footer-brand .nav-logo { font-size: 2rem; display: block; margin-bottom: 1rem; }
+  .footer-brand .nav-logo span { color: var(--rust); }
+  .footer-brand p {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.7;
+    max-width: 280px;
+  }
+  .footer-col h4 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--sand-dark);
+    margin-bottom: 1.2rem;
+  }
+  .footer-col a {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    margin-bottom: 0.6rem;
+    transition: color 0.2s;
+  }
+  .footer-col a:hover { color: var(--rust-light); }
+  .footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-bottom p {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.25);
+  }
+  .footer-bottom p strong { color: var(--rust-light); }
+
+  /* ── FLOATING CTA ── */
+  .float-cta {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 200;
+    background: var(--rust);
+    color: var(--white);
+    padding: 1rem 1.8rem;
+    border-radius: 2px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    transition: background 0.2s, transform 0.15s;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .float-cta:hover { background: var(--ink); transform: translateY(-2px); }
+  .float-cta::before { content: '→'; font-size: 1rem; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-left > * {
+    opacity: 0;
+    animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  .hero-left > *:nth-child(1) { animation-delay: 0.1s; }
+  .hero-left > *:nth-child(2) { animation-delay: 0.2s; }
+  .hero-left > *:nth-child(3) { animation-delay: 0.3s; }
+  .hero-left > *:nth-child(4) { animation-delay: 0.4s; }
+  .hero-left > *:nth-child(5) { animation-delay: 0.5s; }
+  .hero-right {
+    opacity: 0;
+    animation: fadeUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.4s forwards;
+  }
+
+  /* Responsive simplified */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .hero, .manifesto, .about-section, .faq-section { grid-template-columns: 1fr; gap: 3rem; padding: 6rem 1.5rem 3rem; }
+    .hero::before { display: none; }
+    .hero-right { display: none; }
+    .tours-grid { grid-template-columns: 1fr; }
+    .tour-card { border-right: none; border-bottom: 1.5px solid var(--ink); }
+    .reviews-grid { grid-template-columns: 1fr; }
+    .booking-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .tours-section, .reviews-section, .booking-section { padding: 5rem 1.5rem; }
+    .footer-top { grid-template-columns: 1fr; gap: 2rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .hero-stats { flex-wrap: wrap; gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">hafssa<span>.</span></a>
+  <div class="nav-links">
+    <a href="#tours">Tours</a>
+    <a href="#about">About Hafssa</a>
+    <a href="#reviews">Reviews</a>
+    <a href="#book" class="nav-cta">Book now</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">Copenhagen — Only Copenhagen</div>
+    <h1>Not a<br>tour.<br>A <em>city<br>revealed.</em></h1>
+    <p class="hero-sub">
+      Skip the headset tours and laminated maps. I'm Hafssa — I live here, eat here, bike here. I'll show you the <strong>Copenhagen that locals actually love.</strong>
+    </p>
+    <div class="hero-actions">
+      <a href="#book" class="btn-primary">Book your tour</a>
+      <a href="#tours" class="btn-ghost">See all experiences →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">320+</div>
+        <div class="label">Happy guests</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">5★</div>
+        <div class="label">Avg. rating</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">3</div>
+        <div class="label">Unique tours</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-card-stack">
+      <div class="hero-card">
+        <div class="hero-card-inner">
+          <div class="hero-card-img">
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 50 Q20 20 40 25 Q60 30 70 10" stroke="#B8A070" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <circle cx="40" cy="35" r="8" fill="#C4532A" opacity="0.6"/>
+              <path d="M20 55 L60 55 M15 55 L20 42 L60 42 L65 55" stroke="#1A1714" stroke-width="1.5" fill="none"/>
+            </svg>
+          </div>
+          <div class="tour-content">
+            <div class="tour-label">🚲 Bike Tour</div>
+            <div class="hero-card-sub">3 hours · Small group</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-inner">
+          <div class="hero-card-img">
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 45 Q30 15 45 30 Q55 40 65 20" stroke="#2D4A35" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <rect x="25" y="35" width="30" height="15" rx="2" fill="#C4532A" opacity="0.4"/>
+              <circle cx="25" cy="38" r="4" fill="#B8A070" opacity="0.8"/>
+              <circle cx="55" cy="38" r="4" fill="#B8A070" opacity="0.8"/>
+            </svg>
+          </div>
+          <div class="hero-card-inner">
+            <div class="tour-label">🍜 Food Tour</div>
+            <div class="hero-card-sub">4 hours · 7 stops</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-inner">
+          <div class="hero-card-img">
+            <svg viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 50 L40 15 L60 50 Z" stroke="#1A1714" stroke-width="1.5" fill="#D9C9A8" opacity="0.5"/>
+              <circle cx="40" cy="15" r="4" fill="#C4532A"/>
+              <path d="M30 50 L30 35 L50 35 L50 50" stroke="#1A1714" stroke-width="1.5" fill="none"/>
+            </svg>
+          </div>
+          <div class="hero-card-inner">
+            <div class="tour-label">🚶 Walking Tour</div>
+            <div class="hero-card-sub">2.5 hours · Hidden spots</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-strip">
+  <div class="marquee-inner">
+    Not your average tour &nbsp;<span>★</span>&nbsp; Born and raised in Copenhagen &nbsp;<span>★</span>&nbsp; Real food. Real streets. Real stories. &nbsp;<span>★</span>&nbsp; Small groups, big impressions &nbsp;<span>★</span>&nbsp; Forget the tourist traps &nbsp;<span>★</span>&nbsp; Your local guide &nbsp;<span>★</span>&nbsp; Not your average tour &nbsp;<span>★</span>&nbsp; Born and raised in Copenhagen &nbsp;<span>★</span>&nbsp; Real food. Real streets. Real stories. &nbsp;<span>★</span>&nbsp; Small groups, big impressions &nbsp;<span>★</span>&nbsp; Forget the tourist traps &nbsp;<span>★</span>&nbsp; Your local guide &nbsp;<span>★</span>&nbsp;
+  </div>
+</div>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <div class="manifesto-left">
+    <div class="manifesto-label">Why Hafssa</div>
+    <div class="manifesto-num">01</div>
+  </div>
+  <div class="manifesto-right">
+    <h2>Multinational tour brands<br>are <em>so 2010.</em></h2>
+    <p>You flew across the world to experience Copenhagen — not to join a queue of 40 people following someone with an umbrella. Big platforms don't know the vendor at Torvehallerne who makes the best smørrebrød. They don't have a regular table at the natural wine bar in Nørrebro. They haven't biked every canal path at every hour of the day.</p>
+    <p>I have. This city is mine, and for a few hours, I'm making it yours too.</p>
+  </div>
+</section>
+
+<!-- TOURS -->
+<section class="tours-section" id="tours">
+  <div class="section-header">
+    <div>
+      <div class="section-label">What we do</div>
+      <div class="section-title">Three ways to<br><em>fall for</em> Copenhagen</div>
+    </div>
+  </div>
+
+  <div class="tours-grid">
+    <!-- Food Tour -->
+    <div class="tour-card">
+      <div class="tour-content">
+        <div class="tour-num">01</div>
+        <div class="tour-icon-wrap">🍽️</div>
+        <div class="tour-type">Food Tour</div>
+        <div class="tour-title">Eat Copenhagen<br>Like a Local</div>
+        <div class="tour-desc">Seven stops through markets, hidden courtyards, and neighbourhood joints that no guidebook has caught up with yet. We eat properly. No tiny tasting bites.</div>
+        <div class="tour-meta">
+          <div class="tour-meta-item"><strong>4 hrs</strong>Duration</div>
+          <div class="tour-meta-item"><strong>6 max</strong>Group size</div>
+          <div class="tour-meta-item"><strong>590 DKK</strong>Per person</div>
+        </div>
+        <a href="#book" class="tour-btn">Book this tour</a>
+      </div>
+    </div>
+
+    <!-- Walking Tour -->
+    <div class="tour-card">
+      <div class="tour-content">
+        <div class="tour-num">02</div>
+        <div class="tour-icon-wrap">🚶</div>
+        <div class="tour-type">Walking Tour</div>
+        <div class="tour-title">Hidden<br>Copenhagen</div>
+        <div class="tour-desc">The streets, courtyards, and stories that shape this city — far from the Little Mermaid. Architecture, culture, neighbourhoods that actually breathe.</div>
+        <div class="tour-meta">
+          <div class="tour-meta-item"><strong>2.5 hrs</strong>Duration</div>
+          <div class="tour-meta-item"><strong>8 max</strong>Group size</div>
+          <div class="tour-meta-item"><strong>390 DKK</strong>Per person</div>
+        </div>
+        <a href="#book" class="tour-btn">Book this tour</a>
+      </div>
+    </div>
+
+    <!-- Bike Tour -->
+    <div class="tour-card">
+      <div class="tour-content">
+        <div class="tour-num">03</div>
+        <div class="tour-icon-wrap">🚲</div>
+        <div class="tour-type">Bike Tour</div>
+        <div class="tour-title">Copenhagen<br>by Two Wheels</div>
+        <div class="tour-desc">The only way to truly understand this city. We bike like Copenhageners do — through canals, bridges, and neighbourhoods that only make sense on a bike.</div>
+        <div class="tour-meta">
+          <div class="tour-meta-item"><strong>3 hrs</strong>Duration</div>
+          <div class="tour-meta-item"><strong>6 max</strong>Group size</div>
+          <div class="tour-meta-item"><strong>490 DKK</strong>Per person</div>
+        </div>
+        <a href="#book" class="tour-btn">Book this tour</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div class="about-visual">
+    <div class="about-portrait">
+      <span style="font-size:5rem; filter: saturate(0); opacity: 0.15;">🌍</span>
+      <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:0.5rem; padding-bottom:4rem;">
+        <div style="font-family:'Fraunces',serif; font-size:1rem; font-weight:300; color:var(--muted); text-align:center; letter-spacing:0.05em;">Your guide</div>
+        <div style="font-family:'Fraunces',serif; font-size:3.5rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em; line-height:1;">Hafssa</div>
+        <div style="width:40px; height:2px; background:var(--rust);"></div>
+      </div>
+    </div>
+    <div class="about-badge">Born &<br>raised<br>in CPH</div>
+  </div>
+  <div class="about-content">
+    <div class="section-label">Meet your guide</div>
+    <h2>I'm not<br>a brand.<br>I'm <em>local.</em></h2>
+    <p>I grew up in Copenhagen. I went to school here, I learned to bike these streets, I ate my first wienerbrød at the corner bakery I'll take you to. When you walk or eat with me, you're getting my actual city — not a curated version of it.</p>
+    <p><strong>I started these tours because I was tired of watching people spend their whole trip in tourist bubbles.</strong> Copenhagen deserves better, and so do you.</p>
+    <ul class="about-bullets">
+      <li>Born and raised in Nørrebro — Copenhagen's most alive neighbourhood</li>
+      <li>Speaks Danish, English, French & Arabic — my tours adapt to you</li>
+      <li>Personally curated every single stop, restaurant, and route</li>
+      <li>Maximum 6–8 guests per tour — it's intimate by design</li>
+    </ul>
+    <a href="#book" class="btn-primary">Book a tour with me</a>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="reviews-section" id="reviews">
+  <div class="section-header" style="border-bottom: none;">
+    <div>
+      <div class="section-label">What guests say</div>
+      <div class="section-title">Real people.<br><em>Real words.</em></div>
+    </div>
+  </div>
+  <div class="reviews-grid">
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-text">"Hafssa took us to places I'd never have found on my own — a wine bar under a bridge, a smørrebrød spot with no English menu. That's exactly what I wanted."</div>
+      <div class="review-author">Clara M. <span>·</span> Food Tour <span>·</span> Paris, France</div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-text">"The bike tour was the best three hours of our whole trip. She knows every back street, every canal. We felt like locals by the end."</div>
+      <div class="review-author">Sam & Jo <span>·</span> Bike Tour <span>·</span> London, UK</div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <div class="review-text">"After 4 days with a guidebook seeing nothing, one tour with Hafssa and suddenly the city made sense. Book it first, thank yourself later."</div>
+      <div class="review-author">Ryo T. <span>·</span> Walking Tour <span>·</span> Tokyo, Japan</div>
+    </div>
+  </div>
+  <div class="reviews-cta">
+    <p>Over 320 five-star reviews on TripAdvisor & Google</p>
+    <a href="#book" class="btn-primary">Join them — book now</a>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section class="booking-section" id="book">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Book your experience</div>
+      <div class="section-title">Let's do this,<br><em>Copenhagen.</em></div>
+    </div>
+  </div>
+  <div class="booking-grid">
+    <div class="booking-info">
+      <h3>How it works</h3>
+      <p>Fill in the form and I'll get back to you within a few hours to confirm your date. No bots, no call centres — just me.</p>
+      <div class="booking-features">
+        <div class="booking-feature">
+          <div class="feature-icon">✉️</div>
+          <div class="feature-text">
+            <strong>Confirmed within 24h</strong>
+            <span>I reply personally to every booking request with available dates and details.</span>
+          </div>
+        </div>
+        <div class="booking-feature">
+          <div class="feature-icon">👥</div>
+          <div class="feature-text">
+            <strong>Small groups only</strong>
+            <span>Max 6–8 guests per tour. You'll always be seen, heard, and fed properly.</span>
+          </div>
+        </div>
+        <div class="booking-feature">
+          <div class="feature-icon">🌦️</div>
+          <div class="feature-text">
+            <strong>All-weather, always on</strong>
+            <span>Danes don't cancel for rain. Neither do we. I'll keep you comfortable regardless.</span>
+          </div>
+        </div>
+        <div class="booking-feature">
+          <div class="feature-icon">💳</div>
+          <div class="feature-text">
+            <strong>Pay on arrival</strong>
+            <span>No upfront credit card required. Pay in cash or card when we meet.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="booking-form">
+      <h3>Send your request</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>First name</label>
+          <input type="text" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label>Last name</label>
+          <input type="text" placeholder="Last name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" placeholder="you@email.com">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Which tour?</label>
+          <select>
+            <option value="">Select a tour…</option>
+            <option>🍽️ Food Tour — 590 DKK</option>
+            <option>🚶 Walking Tour — 390 DKK</option>
+            <option>🚲 Bike Tour — 490 DKK</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Preferred date</label>
+          <input type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Group size</label>
+        <select>
+          <option>Just me (1)</option>
+          <option>2 people</option>
+          <option>3 people</option>
+          <option>4 people</option>
+          <option>5 people</option>
+          <option>6 people</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Anything I should know?</label>
+        <textarea placeholder="Dietary needs, mobility, kids, special occasion… tell me anything."></textarea>
+      </div>
+      <button class="form-submit" onclick="handleSubmit()">Send my request →</button>
+      <p class="form-note">I reply personally, usually within a few hours.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div>
+    <div class="section-label">Questions</div>
+    <div class="section-title" style="font-size: 2.5rem;">FAQ</div>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q">Where do the tours meet?</div>
+      <div class="faq-a">Meeting points vary per tour. Once your booking is confirmed I'll send you the exact meeting spot with Google Maps link and everything you need to know.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is the food included in the price?</div>
+      <div class="faq-a">Yes — the Food Tour price includes all tastings along the route. For walking and bike tours, any optional food stops are at your own expense (I always point you to the best spots).</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I book a private tour?</div>
+      <div class="faq-a">Absolutely. Private tours are available on request — great for couples, families, or corporate groups. Just mention it in your booking form.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What if it rains?</div>
+      <div class="faq-a">We're Danish — we dress for it and go anyway. I'll provide rain ponchos for bike tours and we adjust the route slightly when needed. Tours are cancelled only in extreme weather, and you'll be refunded in full.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Are the tours suitable for children?</div>
+      <div class="faq-a">Yes! The walking and food tours are family-friendly. The bike tour works with kids who can ride a bike confidently. Let me know ages when you book and I'll tailor accordingly.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="#" class="nav-logo">hafssa<span>.</span></a>
+      <p>Copenhagen, for real. Not a brand — a person who loves her city and wants you to love it too.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Experiences</h4>
+      <a href="#tours">Food Tour</a>
+      <a href="#tours">Walking Tour</a>
+      <a href="#tours">Bike Tour</a>
+      <a href="#book">Private Tours</a>
+    </div>
+    <div class="footer-col">
+      <h4>Get in touch</h4>
+      <a href="mailto:hello@hafssa.dk">hello@hafssa.dk</a>
+      <a href="#book">Book a tour</a>
+      <a href="#about">About me</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Hafssa. Copenhagen only. Always local.</p>
+    <p>Made with love in <strong>Nørrebro</strong></p>
+  </div>
+</footer>
+
+<!-- FLOAT CTA -->
+<a href="#book" class="float-cta">Book a tour</a>
+
+<script>
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  function handleSubmit() {
+    const btn = document.querySelector('.form-submit');
+    btn.textContent = '✓ Request sent! I\'ll be in touch soon.';
+    btn.style.background = 'var(--green)';
+    btn.disabled = true;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.tour-card, .review-card, .booking-feature').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
