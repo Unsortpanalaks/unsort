@@ -833,6 +833,7 @@
   }
 
   /* Responsive simplified */
+  .guide-grid-row { grid-template-columns: 1fr !important; gap: 2rem !important; }
   @media (max-width: 900px) {
     nav { padding: 1rem 1.5rem; }
     .nav-links { display: none; }
@@ -1248,17 +1249,14 @@
       const sec = document.getElementById('guides-section');
       if (Array.isArray(guides) && guides.length && sec) {
         sec.innerHTML = guides.map((g, i) => `
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;margin-bottom:${i<guides.length-1?'5rem':'0'};">
-            <div class="about-visual" style="position:relative;">
-              <div class="about-portrait" style="${g.photo_url?'padding:0;overflow:hidden;':''}">
-                ${g.photo_url
-                  ? `<img src="${g.photo_url}" style="width:100%;height:100%;object-fit:cover;">`
-                  : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;padding-bottom:4rem;">
-                      <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:300;color:var(--muted);">Your guide</div>
-                      <div style="font-family:'Fraunces',serif;font-size:2.5rem;font-weight:900;color:var(--ink);letter-spacing:-0.04em;line-height:1;text-align:center;">${g.name}</div>
-                      <div style="width:40px;height:2px;background:var(--rust);"></div>
-                    </div>`}
-              </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;margin-bottom:${i<guides.length-1?'5rem':'0'};" class="guide-grid-row">
+            <div style="position:relative;max-width:400px;">
+              ${g.photo_url
+                ? `<img src="${g.photo_url}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border:1.5px solid var(--ink);border-radius:4px;display:block;">`
+                : `<div style="width:100%;aspect-ratio:3/4;background:var(--sand);border:1.5px solid var(--ink);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;">
+                    <div style="font-family:'Fraunces',serif;font-size:2.5rem;font-weight:900;color:var(--ink);letter-spacing:-0.04em;text-align:center;">${g.name}</div>
+                    <div style="width:40px;height:2px;background:var(--rust);"></div>
+                  </div>`}
               <div class="about-badge">Born &<br>raised<br>in CPH</div>
             </div>
             <div class="about-content">
