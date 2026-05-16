@@ -1212,26 +1212,32 @@
   dateInput.max = maxDate.toISOString().split('T')[0];
 
   // ── Check availability when date or slot changes ──
-  let blockedSlots = []; // cache fetched from Supabase
+  // capacity cache
+  let capacityCache = {};
+  const MAX_CAPACITY = 10;
 
-  async function fetchBlocked() {
+  async function fetchCapacity() {
     try {
-      const url = `${SUPABASE_URL}/rest/v1/bookings?select=tour_date,slot&status=eq.accepted`;
-      const res = await fetch(url, {
-        headers: {
-          'apikey': SUPABASE_ANON,
-          'Authorization': `Bearer ${SUPABASE_ANON}`
-        }
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/slot_capacity?select=tour_date,slot,booked,remaining`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
       });
-      blockedSlots = await res.json();
-    } catch(e) {
-      console.error('Could not fetch availability', e);
-    }
+      const data = await res.json();
+      capacityCache = {};
+      if (Array.isArray(data)) {
+        data.forEach(r => { capacityCache[r.tour_date + '|' + r.slot] = { booked: r.booked, remaining: r.remaining }; });
+      }
+    } catch(e) { console.error('Could not fetch capacity', e); }
   }
-  fetchBlocked();
+  fetchCapacity();
+
+  function getRemaining(date, slot) {
+    const key = date + '|' + slot;
+    if (capacityCache[key]) return Math.max(0, capacityCache[key].remaining);
+    return MAX_CAPACITY;
+  }
 
   function isBlocked(date, slot) {
-    return blockedSlots.some(b => b.tour_date === date && b.slot === slot);
+    return getRemaining(date, slot) <= 0;
   }
 
   function checkAvailability() {
@@ -1240,14 +1246,19 @@
     const badge = document.getElementById('avail-status');
     if (!date || !slot) { badge.style.display = 'none'; return; }
     badge.style.display = 'block';
-    if (isBlocked(date, slot)) {
+    const remaining = getRemaining(date, slot);
+    if (remaining <= 0) {
       badge.style.background = '#FCEBEB';
       badge.style.color = '#A32D2D';
-      badge.textContent = '✗ This slot is already booked — please choose another date or time.';
+      badge.textContent = '\u2717 This slot is fully booked \u2014 please choose another date or time.';
+    } else if (remaining <= 3) {
+      badge.style.background = '#FEF3C7';
+      badge.style.color = '#92400E';
+      badge.textContent = '\u26a0\ufe0f Only ' + remaining + ' spot' + (remaining === 1 ? '' : 's') + ' left!';
     } else {
       badge.style.background = '#EAF3DE';
       badge.style.color = '#3B6D11';
-      badge.textContent = '✓ This slot is available!';
+      badge.textContent = '\u2713 Available \u2014 ' + remaining + ' spots remaining';
     }
   }
 
@@ -1270,7 +1281,7 @@
     if (!tour) { alert('Please select a tour.'); return; }
     if (!date) { alert('Please choose a date.'); return; }
     if (!slot) { alert('Please choose a time slot.'); return; }
-    if (isBlocked(date, slot)) { alert('Sorry, that slot is already booked. Please choose another date or time.'); return; }
+    if (isBlocked(date, slot)) { alert('Sorry, this slot is fully booked. Please choose another date or time.'); return; }
     setStep(2);
   }
 
