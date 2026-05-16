@@ -514,6 +514,14 @@ function renderTours() {
           <div class="cform-row"><label>Max group size</label><input id="t-max-${t.id}" type="number" value="${t.max_group}"></div>
         </div>
         <div class="cform-row"><label>Price (DKK per person)</label><input id="t-price-${t.id}" type="number" value="${t.price_dkk}"></div>
+        <div class="cform-row"><label>Highlights (one per line — e.g. "7 food tastings included")</label><textarea id="t-hl-${t.id}" style="min-height:80px;">${t.highlights||''}</textarea></div>
+        <div class="cform-row"><label>What to expect</label><textarea id="t-wte-${t.id}" style="min-height:80px;">${t.what_to_expect||''}</textarea></div>
+        <div class="cform-row"><label>Meeting point</label><input id="t-mp-${t.id}" value="${t.meeting_point||''}" placeholder="e.g. Outside Nørreport Station, by the bicycle racks"></div>
+        <div style="margin-top:0.5rem;">
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;">Photos</div>
+          <div id="t-photos-${t.id}" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;"></div>
+          <input type="file" accept="image/*" multiple onchange="uploadTourPhotos('${t.id}',this)" style="font-size:0.8rem;">
+        </div>
       </div>
       <div class="cform-actions">
         <button class="cbtn cbtn-save" onclick="saveTour('${t.id}')">Save changes</button>
@@ -529,11 +537,21 @@ async function saveTour(id) {
     duration: document.getElementById('t-dur-'+id).value,
     max_group: parseInt(document.getElementById('t-max-'+id).value),
     price_dkk: parseInt(document.getElementById('t-price-'+id).value),
+    highlights: document.getElementById('t-hl-'+id).value,
+    what_to_expect: document.getElementById('t-wte-'+id).value,
+    meeting_point: document.getElementById('t-mp-'+id).value,
   };
   const r = await fetch(`${SURL}/rest/v1/tours?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify(body)});
   if(r.ok) { showToast('Tour saved!'); await loadContent(); }
   else showToast('Something went wrong.');
 }
+
+// Load tour photos after rendering
+const _origRenderTours = renderTours;
+renderTours = function() {
+  _origRenderTours();
+  toursData.forEach(t => loadTourPhotos(t.id));
+};
 
 async function toggleTour(id, current) {
   const r = await fetch(`${SURL}/rest/v1/tours?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify({active:!current})});
@@ -1047,6 +1065,43 @@ async function deleteReview(id) {
   const r = await fetch(`${SURL}/rest/v1/reviews?id=eq.${id}`, {method:'DELETE', headers:hdrs()});
   if (r.ok) { showToast('Review deleted.'); await loadReviews(); }
   else showToast('Something went wrong.');
+}
+
+async function loadTourPhotos(tourId) {
+  const r = await fetch(`${SURL}/rest/v1/tour_photos?select=*&tour_id=eq.${tourId}&order=sort_order`, {headers:hdrs()});
+  const photos = await r.json();
+  const el = document.getElementById('t-photos-'+tourId);
+  if (!el) return;
+  if (!photos.length) { el.innerHTML = '<span style="font-size:0.78rem;color:var(--muted);font-style:italic;">No photos yet</span>'; return; }
+  el.innerHTML = photos.map(p => `
+    <div style="position:relative;display:inline-block;">
+      <img src="${p.photo_url}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1.5px solid var(--sand);">
+      <button onclick="deleteTourPhoto('${p.id}','${tourId}')" style="position:absolute;top:-6px;right:-6px;background:var(--declined);color:white;border:none;width:20px;height:20px;border-radius:50%;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>`).join('');
+}
+
+async function uploadTourPhotos(tourId, input) {
+  const files = Array.from(input.files);
+  showToast('Uploading ' + files.length + ' photo(s)...');
+  for (let i=0; i<files.length; i++) {
+    const url = await uploadPhoto(files[i], 'tours');
+    if (url) {
+      await fetch(`${SURL}/rest/v1/tour_photos`, {
+        method: 'POST', headers: jhdrs(),
+        body: JSON.stringify({ tour_id: tourId, photo_url: url, sort_order: i })
+      });
+    }
+  }
+  showToast('Photos uploaded!');
+  loadTourPhotos(tourId);
+  input.value = '';
+}
+
+async function deleteTourPhoto(photoId, tourId) {
+  if (!confirm('Delete this photo?')) return;
+  await fetch(`${SURL}/rest/v1/tour_photos?id=eq.${photoId}`, {method:'DELETE', headers:hdrs()});
+  showToast('Photo deleted.');
+  loadTourPhotos(tourId);
 }
 
 checkAuth();
