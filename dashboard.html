@@ -558,18 +558,44 @@ function selectDate(ds) {
   selectedDate=ds; selId=null; renderCal(); renderList();
   const db=bookings.filter(b=>b.tour_date===ds);
   const label=new Date(ds+'T00:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const m=db.find(b=>b.slot==='morning'), a=db.find(b=>b.slot==='afternoon');
-  function sh(bk,time){
-    if(!bk)return`<div class="day-slot"><div class="ds-time">${time}</div><div class="ds-free">Available</div></div>`;
-    return`<div class="day-slot" onclick="selBooking('${bk.id}')" style="cursor:pointer;">
-      <div class="ds-time">${time}</div>
-      <div class="ds-info"><div class="ds-name">${bk.first_name} ${bk.last_name} · ${bk.group_size} pax <span style="font-size:0.65rem;color:var(--muted);">#${bk.booking_number||'–'}</span></div><div class="ds-tour">${TOURS[bk.tour_type]||bk.tour_type}</div></div>
-      <span class="sbadge s-${bk.status}">${bk.status}</span>
-    </div>`;
+  const mBookings=db.filter(b=>b.slot==='morning');
+  const aBookings=db.filter(b=>b.slot==='afternoon');
+
+  function capInfo(slotKey) {
+    const cap=capCache[slotKey];
+    const remaining=cap ? Math.max(0,cap.remaining) : 10;
+    const booked=cap ? cap.booked : 0;
+    const color=remaining<=3?'var(--declined)':remaining<=6?'var(--pending)':'var(--green)';
+    return `<span style="font-size:0.72rem;font-weight:600;color:${color};">${booked}/10 booked · ${remaining} spots left</span>`;
   }
+
+  function slotSection(slotBookings, slotName, slotKey) {
+    const bookingRows = slotBookings.length === 0
+      ? `<div style="padding:0.8rem 1.1rem;color:var(--muted);font-size:0.82rem;font-style:italic;">No bookings</div>`
+      : slotBookings.map(bk => `
+        <div class="day-slot" onclick="selBooking('${bk.id}')" style="cursor:pointer;">
+          <div class="ds-info" style="flex:1;">
+            <div class="ds-name">${bk.first_name} ${bk.last_name} <span style="font-size:0.65rem;color:var(--muted);">#${bk.booking_number||'–'}</span></div>
+            <div class="ds-tour">${TOURS[bk.tour_type]||bk.tour_type} · ${bk.group_size} pax · <a href="mailto:${bk.email}" style="color:var(--rust);font-size:0.7rem;">${bk.email}</a></div>
+            ${bk.notes?`<div style="font-size:0.7rem;color:var(--muted);font-style:italic;margin-top:0.15rem;">📝 ${bk.notes}</div>`:''}
+          </div>
+          <span class="sbadge s-${bk.status}">${bk.status}</span>
+        </div>`).join('');
+    return `
+      <div class="day-card" style="margin-bottom:1rem;">
+        <div class="day-head" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>${slotName === 'Morning' ? '🌅 Morning — 9:30 am to 1:00 pm' : '🌇 Afternoon — 2:30 pm to 6:00 pm'}</span>
+          ${capInfo(slotKey)}
+        </div>
+        ${bookingRows}
+      </div>`;
+  }
+
   document.getElementById('detail-area').innerHTML=`
-    <div class="day-card"><div class="day-head">${label}</div>${sh(m,'Morning')}${sh(a,'Afternoon')}</div>
-    <div style="text-align:center;padding:1rem;color:var(--muted);font-size:0.78rem;">Click a slot to manage the booking</div>`;
+    <div style="margin-bottom:0.5rem;font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;letter-spacing:-0.02em;">${label}</div>
+    ${slotSection(mBookings,'Morning',ds+'|morning')}
+    ${slotSection(aBookings,'Afternoon',ds+'|afternoon')}
+    <div style="text-align:center;padding:0.5rem;color:var(--muted);font-size:0.78rem;">Click a booking to manage it</div>`;
 }
 
 // TOAST
