@@ -920,71 +920,12 @@
     <div class="section-label">What we do</div>
     <div class="section-title">Three ways to<br><em>fall for</em> Copenhagen</div>
   </div></div>
-  <div class="tours-grid">
-    <div class="tour-card"><div class="tour-content">
-      <div class="tour-num">01</div><div class="tour-icon-wrap">🍽️</div>
-      <div class="tour-type">Food Tour</div>
-      <div class="tour-title">Eat Copenhagen<br>Like a Local</div>
-      <div class="tour-desc">Seven stops through markets, hidden courtyards, and neighbourhood joints that no guidebook has caught up with yet. We eat properly. No tiny tasting bites.</div>
-      <div class="tour-meta">
-        <div class="tour-meta-item"><strong>4 hrs</strong>Duration</div>
-        <div class="tour-meta-item"><strong>6 max</strong>Group size</div>
-        <div class="tour-meta-item"><strong>590 DKK</strong>Per person</div>
-      </div>
-      <a href="#book" class="tour-btn" onclick="prefillTour('food')">Book this tour</a>
-    </div></div>
-    <div class="tour-card"><div class="tour-content">
-      <div class="tour-num">02</div><div class="tour-icon-wrap">🚶</div>
-      <div class="tour-type">Walking Tour</div>
-      <div class="tour-title">Hidden<br>Copenhagen</div>
-      <div class="tour-desc">The streets, courtyards, and stories that shape this city — far from the Little Mermaid. Architecture, culture, neighbourhoods that actually breathe.</div>
-      <div class="tour-meta">
-        <div class="tour-meta-item"><strong>2.5 hrs</strong>Duration</div>
-        <div class="tour-meta-item"><strong>8 max</strong>Group size</div>
-        <div class="tour-meta-item"><strong>390 DKK</strong>Per person</div>
-      </div>
-      <a href="#book" class="tour-btn" onclick="prefillTour('walking')">Book this tour</a>
-    </div></div>
-    <div class="tour-card"><div class="tour-content">
-      <div class="tour-num">03</div><div class="tour-icon-wrap">🚲</div>
-      <div class="tour-type">Bike Tour</div>
-      <div class="tour-title">Copenhagen<br>by Two Wheels</div>
-      <div class="tour-desc">The only way to truly understand this city. We bike like Copenhageners do — through canals, bridges, and neighbourhoods that only make sense on a bike.</div>
-      <div class="tour-meta">
-        <div class="tour-meta-item"><strong>3 hrs</strong>Duration</div>
-        <div class="tour-meta-item"><strong>6 max</strong>Group size</div>
-        <div class="tour-meta-item"><strong>490 DKK</strong>Per person</div>
-      </div>
-      <a href="#book" class="tour-btn" onclick="prefillTour('bike')">Book this tour</a>
-    </div></div>
-  </div>
+  <div class="tours-grid" id="tours-grid"><div style="padding:3rem;text-align:center;color:var(--muted);">Loading tours...</div></div>
 </section>
 
 <!-- ABOUT -->
 <section class="about-section" id="about">
-  <div class="about-visual">
-    <div class="about-portrait">
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;padding-bottom:4rem;">
-        <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:300;color:var(--muted);letter-spacing:0.05em;">Your guide</div>
-        <div style="font-family:'Fraunces',serif;font-size:2.8rem;font-weight:900;color:var(--ink);letter-spacing:-0.04em;line-height:1;text-align:center;">Good Good<br>Copenhagen</div>
-        <div style="width:40px;height:2px;background:var(--rust);"></div>
-      </div>
-    </div>
-    <div class="about-badge">Born &<br>raised<br>in CPH</div>
-  </div>
-  <div class="about-content">
-    <div class="section-label">Meet your guide</div>
-    <h2>I'm not<br>a brand.<br>I'm <em>local.</em></h2>
-    <p>I grew up in Copenhagen. I went to school here, I learned to bike these streets, I ate my first wienerbrød at the corner bakery I'll take you to. When you walk or eat with me, you're getting my actual city — not a curated version of it.</p>
-    <p><strong>I started these tours because I was tired of watching people spend their whole trip in tourist bubbles.</strong> Copenhagen deserves better, and so do you.</p>
-    <ul class="about-bullets">
-      <li>Born and raised in Nørrebro — Copenhagen's most alive neighbourhood</li>
-      <li>Speaks Danish, English, French & Arabic — my tours adapt to you</li>
-      <li>Personally curated every single stop, restaurant, and route</li>
-      <li>Maximum 6–8 guests per tour — it's intimate by design</li>
-    </ul>
-    <a href="#book" class="btn-primary">Book a tour with me</a>
-  </div>
+  <div id="guides-section" style="grid-column:1/-1;"></div>
 </section>
 
 <!-- REVIEWS -->
@@ -1264,6 +1205,96 @@
 
   document.getElementById('f-date').addEventListener('change', checkAvailability);
   document.getElementById('f-slot').addEventListener('change', checkAvailability);
+
+  // ── Dynamic content loading ──
+  async function loadSiteContent() {
+    // Load tours
+    try {
+      const tr = await fetch(`${SUPABASE_URL}/rest/v1/tours?select=*&active=eq.true&order=sort_order`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+      });
+      const tours = await tr.json();
+      if (Array.isArray(tours) && tours.length) {
+        const grid = document.getElementById('tours-grid');
+        grid.innerHTML = tours.map((t, i) => `
+          <div class="tour-card"><div class="tour-content">
+            <div class="tour-num">0${i+1}</div>
+            <div class="tour-icon-wrap">${t.icon}</div>
+            <div class="tour-type">${t.icon.includes('🍽')?'Food Tour':t.icon.includes('🚶')?'Walking Tour':'Bike Tour'}</div>
+            <div class="tour-title">${t.title.replace(' ', '<br>')}</div>
+            <div class="tour-desc">${t.description}</div>
+            <div class="tour-meta">
+              <div class="tour-meta-item"><strong>${t.duration}</strong>Duration</div>
+              <div class="tour-meta-item"><strong>${t.max_group} max</strong>Group size</div>
+              <div class="tour-meta-item"><strong>${t.price_dkk} DKK</strong>Per person</div>
+            </div>
+            <a href="#book" class="tour-btn" onclick="prefillTour('${t.id}')">Book this tour</a>
+          </div></div>`).join('');
+        // Update booking form tour options
+        const sel = document.getElementById('f-tour');
+        if (sel) {
+          sel.innerHTML = '<option value="">Select a tour…</option>' +
+            tours.map(t => `<option value="${t.id}">${t.icon} ${t.title} — ${t.price_dkk} DKK/person</option>`).join('');
+        }
+      }
+    } catch(e) { console.error('Could not load tours', e); }
+
+    // Load guides
+    try {
+      const gr = await fetch(`${SUPABASE_URL}/rest/v1/guides?select=*&active=eq.true&order=sort_order`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+      });
+      const guides = await gr.json();
+      const sec = document.getElementById('guides-section');
+      if (Array.isArray(guides) && guides.length && sec) {
+        sec.innerHTML = guides.map((g, i) => `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;margin-bottom:${i<guides.length-1?'5rem':'0'};">
+            <div class="about-visual" style="position:relative;">
+              <div class="about-portrait" style="${g.photo_url?'padding:0;overflow:hidden;':''}">
+                ${g.photo_url
+                  ? `<img src="${g.photo_url}" style="width:100%;height:100%;object-fit:cover;">`
+                  : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;padding-bottom:4rem;">
+                      <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:300;color:var(--muted);">Your guide</div>
+                      <div style="font-family:'Fraunces',serif;font-size:2.5rem;font-weight:900;color:var(--ink);letter-spacing:-0.04em;line-height:1;text-align:center;">${g.name}</div>
+                      <div style="width:40px;height:2px;background:var(--rust);"></div>
+                    </div>`}
+              </div>
+              <div class="about-badge">Born &<br>raised<br>in CPH</div>
+            </div>
+            <div class="about-content">
+              <div class="section-label">Meet your guide</div>
+              <h2 style="font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2rem,3.5vw,3rem);letter-spacing:-0.04em;line-height:1.1;margin-bottom:1.5rem;">${g.name}</h2>
+              <p style="font-size:1rem;font-weight:300;color:var(--muted);line-height:1.8;margin-bottom:1rem;">${g.bio}</p>
+              <ul class="about-bullets" style="margin:1.5rem 0 1.5rem;">
+                <li>Speaks: ${g.languages}</li>
+                ${g.instagram?`<li>Instagram: <a href="https://instagram.com/${g.instagram.replace('@','')}" style="color:var(--rust);">${g.instagram}</a></li>`:''}
+                ${g.facebook?`<li>Facebook: <a href="${g.facebook}" style="color:var(--rust);">Facebook profile</a></li>`:''}
+              </ul>
+              <a href="#book" class="btn-primary">Book a tour with ${g.name.split(' ')[0]}</a>
+            </div>
+          </div>`).join('');
+      } else if (sec) {
+        sec.innerHTML = `
+          <div class="about-visual">
+            <div class="about-portrait">
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;padding-bottom:4rem;">
+                <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:300;color:var(--muted);">Your guide</div>
+                <div style="font-family:'Fraunces',serif;font-size:2.8rem;font-weight:900;color:var(--ink);letter-spacing:-0.04em;line-height:1;text-align:center;">Good Good<br>Copenhagen</div>
+                <div style="width:40px;height:2px;background:var(--rust);"></div>
+              </div>
+            </div>
+            <div class="about-badge">Born &<br>raised<br>in CPH</div>
+          </div>
+          <div class="about-content">
+            <div class="section-label">Meet your guide</div>
+            <h2 style="font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2rem,3.5vw,3rem);letter-spacing:-0.04em;line-height:1.1;margin-bottom:1.5rem;">I'm not<br>a brand.<br>I'm <em style="font-style:italic;font-weight:300;color:var(--rust);">local.</em></h2>
+            <p style="font-size:1rem;font-weight:300;color:var(--muted);line-height:1.8;margin-bottom:1rem;">I grew up in Copenhagen. Add your guide profile from the dashboard to show it here.</p>
+            <a href="#book" class="btn-primary">Book a tour with me</a>
+          </div>`;
+      }
+    } catch(e) { console.error('Could not load guides', e); }
+  }
+  loadSiteContent();
 
   // ── Step navigation ──
   function setStep(n) {
