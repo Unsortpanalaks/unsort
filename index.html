@@ -1318,8 +1318,9 @@
       const grid = document.getElementById('articles-grid');
       if (Array.isArray(articles) && articles.length && grid) {
         const CATS = { news:'📰 News', update:'🔄 Update', guide:'🗺️ Guide', event:'🎉 Event' };
-        grid.innerHTML = articles.map(a => `
-          <div onclick="openArticle(${JSON.stringify(a).replace(/'/g,'\')})" style="background:var(--cream);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+        window._articles = articles;
+        grid.innerHTML = articles.map((a,idx) => `
+          <div onclick="openArticle(${idx})" style="background:var(--cream);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
             ${a.photo_url
               ? `<img src="${a.photo_url}" style="width:100%;aspect-ratio:16/9;object-fit:cover;">`
               : `<div style="width:100%;aspect-ratio:16/9;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">📰</div>`}
@@ -1458,7 +1459,8 @@
   });
 
   // ── Article modal ──
-  function openArticle(a) {
+  function openArticle(idx) {
+    const a = window._articles[idx];
     const CATS = { news:'📰 News', update:'🔄 Update', guide:'🗺️ Guide', event:'🎉 Event' };
     const dateStr = new Date(a.published_at).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
     const bodyHtml = a.body.replace(/\n\n/g,'</p><p style="font-size:1rem;font-weight:300;color:var(--muted);line-height:1.8;margin-bottom:1rem;">').replace(/\n/g,'<br>');
