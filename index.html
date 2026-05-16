@@ -934,30 +934,34 @@
 
 <!-- REVIEWS -->
 <section class="reviews-section" id="reviews">
-  <div class="section-header" style="border-bottom:none;"><div>
-    <div class="section-label">What guests say</div>
-    <div class="section-title">Real people.<br><em>Real words.</em></div>
-  </div></div>
-  <div class="reviews-grid">
-    <div class="review-card">
-      <div class="review-stars">★★★★★</div>
-      <div class="review-text">"My guide took us to places I'd never have found on my own — a wine bar under a bridge, a smørrebrød spot with no English menu. That's exactly what I wanted."</div>
-      <div class="review-author">Clara M. <span>·</span> Food Tour <span>·</span> Paris, France</div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:3rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div class="section-label" style="color:var(--sand-dark);">What guests say</div>
+      <div class="section-title" style="color:var(--cream);">Real people.<br><em>Real words.</em></div>
     </div>
-    <div class="review-card">
-      <div class="review-stars">★★★★★</div>
-      <div class="review-text">"The bike tour was the best three hours of our whole trip. She knows every back street, every canal. We felt like locals by the end."</div>
-      <div class="review-author">Sam & Jo <span>·</span> Bike Tour <span>·</span> London, UK</div>
-    </div>
-    <div class="review-card">
-      <div class="review-stars">★★★★★</div>
-      <div class="review-text">"After 4 days with a guidebook seeing nothing, one tour with Good Good and suddenly the city made sense. Book it first, thank yourself later."</div>
-      <div class="review-author">Ryo T. <span>·</span> Walking Tour <span>·</span> Tokyo, Japan</div>
+    <div style="display:flex;gap:0.5rem;" id="reviews-nav" style="display:none;">
+      <button onclick="slideReview(-1)" style="width:40px;height:40px;border:1.5px solid rgba(255,255,255,0.3);border-radius:50%;background:transparent;color:var(--cream);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--rust)';this.style.color='var(--rust)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='var(--cream)'">←</button>
+      <button onclick="slideReview(1)" style="width:40px;height:40px;border:1.5px solid rgba(255,255,255,0.3);border-radius:50%;background:transparent;color:var(--cream);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--rust)';this.style.color='var(--rust)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='var(--cream)'">→</button>
     </div>
   </div>
+
+  <!-- Dynamic review slider -->
+  <div style="overflow:hidden;margin-bottom:2rem;">
+    <div id="reviews-slider" style="display:flex;transition:transform 0.45s cubic-bezier(0.4,0,0.2,1);">
+      <!-- Filled by JS -->
+      <div class="review-card" style="min-width:100%;">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">"My guide took us to places I'd never have found on my own — a wine bar under a bridge, a smørrebrød spot with no English menu."</div>
+        <div class="review-author">Clara M. <span>·</span> Food Tour <span>·</span> Paris, France</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dots -->
+  <div style="display:flex;justify-content:center;gap:0.4rem;margin-bottom:2.5rem;" id="review-dots"></div>
+
   <div class="reviews-cta">
-    <p>Over 320 five-star reviews on TripAdvisor & Google</p>
-    <a href="#book" class="btn-primary">Join them — book now</a>
+    <a href="#book" class="btn-primary">Book now — pay on the day</a>
   </div>
 </section>
 
@@ -1315,6 +1319,10 @@
       }
       // Show guide cards
       sec.innerHTML = `
+        <div style="margin-bottom:2.5rem;">
+          <div class="section-label">Our team</div>
+          <div class="section-title" style="font-size:clamp(2rem,4vw,3rem);">Meet our <em>guides</em></div>
+        </div>
         <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
           ${window._guides.map((g,i) => `
             <div onclick="openGuideProfile(${i})" style="cursor:pointer;background:var(--white);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;width:220px;flex-shrink:0;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
@@ -1329,6 +1337,18 @@
             </div>`).join('')}
         </div>`;
     } catch(e) { console.error('Could not load guides', e); }
+
+    // Load all reviews for homepage slider
+    try {
+      const rr = await fetch(`${SUPABASE_URL}/rest/v1/reviews?select=*&active=eq.true&order=reviewed_at.desc`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+      });
+      const allRevs = await rr.json();
+      if (Array.isArray(allRevs) && allRevs.length) {
+        window._allReviews = allRevs;
+        buildReviewSlider(allRevs);
+      }
+    } catch(e) { console.error('Could not load reviews', e); }
 
     // Load articles
     try {
@@ -1589,6 +1609,66 @@
     if (e.target === document.getElementById('tour-modal')) {
       document.getElementById('tour-modal').style.display = 'none';
       document.body.style.overflow = '';
+    }
+  }
+
+  // ── Review slider ──
+  let reviewIdx = 0;
+  window._allReviews = [];
+
+  function buildReviewSlider(reviews) {
+    const slider = document.getElementById('reviews-slider');
+    const dots   = document.getElementById('review-dots');
+    const nav    = document.getElementById('reviews-nav');
+    if (!slider) return;
+
+    slider.innerHTML = reviews.map(r => {
+      const stars = '★'.repeat(r.stars) + '☆'.repeat(5-r.stars);
+      const source = r.source_url
+        ? `<a href="${r.source_url}" target="_blank" rel="noopener" style="color:var(--rust-light);font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;border:1px solid var(--rust-light);padding:0.1rem 0.4rem;border-radius:2px;text-decoration:none;">${r.source} ↗</a>`
+        : `<span style="color:var(--rust-light);font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;border:1px solid var(--rust-light);padding:0.1rem 0.4rem;border-radius:2px;">${r.source}</span>`;
+      return `<div class="review-card" style="min-width:33.333%;padding-right:1.5rem;box-sizing:border-box;">
+        <div class="review-stars">${stars}</div>
+        <div class="review-text">"${r.text}"</div>
+        <div class="review-author" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">${r.reviewer} <span>·</span> ${new Date(r.reviewed_at+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'})} ${source}</div>
+      </div>`;
+    }).join('');
+
+    // Show 3 at a time on desktop, 1 on mobile
+    const perPage = window.innerWidth < 700 ? 1 : 3;
+    const pages = Math.ceil(reviews.length / perPage);
+
+    if (dots) {
+      dots.innerHTML = Array.from({length:pages},(_,i) =>
+        `<button onclick="goToReview(${i})" id="rdot-${i}" style="width:7px;height:7px;border-radius:50%;background:${i===0?'var(--rust-light)':'rgba(255,255,255,0.25)'};border:none;cursor:pointer;padding:0;transition:background 0.2s;"></button>`
+      ).join('');
+    }
+
+    if (nav && reviews.length > 3) nav.style.display = 'flex';
+    reviewIdx = 0;
+  }
+
+  function slideReview(dir) {
+    const reviews = window._allReviews;
+    if (!reviews.length) return;
+    const perPage = window.innerWidth < 700 ? 1 : 3;
+    const pages = Math.ceil(reviews.length / perPage);
+    reviewIdx = (reviewIdx + dir + pages) % pages;
+    goToReview(reviewIdx);
+  }
+
+  function goToReview(idx) {
+    const slider = document.getElementById('reviews-slider');
+    if (!slider) return;
+    reviewIdx = idx;
+    const perPage = window.innerWidth < 700 ? 1 : 3;
+    const pct = idx * perPage * (100 / 3);
+    slider.style.transform = `translateX(-${pct}%)`;
+    const reviews = window._allReviews;
+    const pages = Math.ceil(reviews.length / (perPage));
+    for(let i=0;i<pages;i++){
+      const d=document.getElementById('rdot-'+i);
+      if(d) d.style.background = i===idx?'var(--rust-light)':'rgba(255,255,255,0.25)';
     }
   }
 
