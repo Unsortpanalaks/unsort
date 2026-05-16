@@ -958,6 +958,17 @@
   </div>
 </section>
 
+<!-- ARTICLES SECTION -->
+<section class="tours-section" id="articles" style="background:var(--white);display:none;">
+  <div class="section-header">
+    <div>
+      <div class="section-label">From Copenhagen</div>
+      <div class="section-title">News &<br><em>Updates</em></div>
+    </div>
+  </div>
+  <div id="articles-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;"></div>
+</section>
+
 <!-- ══════════════════════════════════════════════
      BOOKING SECTION — wired to Supabase
      ══════════════════════════════════════════════ -->
@@ -1289,6 +1300,36 @@
           </div>`;
       }
     } catch(e) { console.error('Could not load guides', e); }
+
+    // Load articles
+    try {
+      const ar = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&active=eq.true&order=published_at.desc&limit=6`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+      });
+      const articles = await ar.json();
+      const grid = document.getElementById('articles-grid');
+      if (Array.isArray(articles) && articles.length && grid) {
+        const CATS = { news:'📰 News', update:'🔄 Update', guide:'🗺️ Guide', event:'🎉 Event' };
+        grid.innerHTML = articles.map(a => `
+          <div style="background:var(--cream);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;">
+            ${a.photo_url
+              ? `<img src="${a.photo_url}" style="width:100%;aspect-ratio:16/9;object-fit:cover;">`
+              : `<div style="width:100%;aspect-ratio:16/9;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">📰</div>`}
+            <div style="padding:1.2rem;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+                <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--rust);font-weight:500;">${CATS[a.category]||a.category}</span>
+                <span style="font-size:0.65rem;color:var(--muted);">· ${new Date(a.published_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
+              </div>
+              <div style="font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;letter-spacing:-0.02em;line-height:1.25;margin-bottom:0.75rem;color:var(--ink);">${a.title}</div>
+              <p style="font-size:0.85rem;font-weight:300;color:var(--muted);line-height:1.7;flex:1;">${a.body.substring(0,150)}${a.body.length>150?'…':''}</p>
+            </div>
+          </div>`).join('');
+        // Show the section only if there are articles
+        document.getElementById('articles').style.display = 'block';
+      } else if (grid) {
+        document.getElementById('articles').style.display = 'none';
+      }
+    } catch(e) { console.error('Could not load articles', e); }
   }
   loadSiteContent();
 
