@@ -299,6 +299,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 
 <script>
 const SURL = 'https://mzcsiqquiigetvwivnhy.supabase.co';
+  const MAX_CAP = 10;
+  let capCache = {};
+
+  async function fetchCapacity() {
+    try {
+      const r = await fetch(`${SURL}/rest/v1/slot_capacity?select=tour_date,slot,booked,remaining`, {headers:hdrs()});
+      const d = await r.json();
+      capCache = {};
+      if (Array.isArray(d)) d.forEach(x => capCache[x.tour_date+'|'+x.slot] = x);
+    } catch(e) {}
+  }
 const SKEY = 'sb_publishable_uwvelsnq-xwUuXEd8TMNbA_KHZKMBS-';
 const DEFAULT_PW = 'phuket';
 const TOURS = { food:'🍽️ Food Tour', walking:'🚶 Walking Tour', bike:'🚲 Bike Tour' };
@@ -350,6 +361,7 @@ async function checkAuth() {
 async function init() { await load(); setInterval(load,30000); }
 
 async function load() {
+    await fetchCapacity();
   const [b,t,s] = await Promise.all([
     fetch(`${SURL}/rest/v1/bookings?select=*&deleted_at=is.null&order=tour_date.asc,created_at.desc`,{headers:hdrs()}).then(r=>r.json()),
     fetch(`${SURL}/rest/v1/bookings?select=*&deleted_at=not.is.null&order=deleted_at.desc`,{headers:hdrs()}).then(r=>r.json()),
