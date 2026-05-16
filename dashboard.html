@@ -165,6 +165,35 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 .snote { font-size:0.75rem;color:var(--muted);margin-top:0.65rem;line-height:1.6; }
 
 /* TOAST */
+.cform { background:var(--white);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;margin-bottom:1.2rem; }
+.cform-head { background:var(--ink);padding:0.9rem 1.3rem;display:flex;justify-content:space-between;align-items:center; }
+.cform-head h3 { font-family:"Fraunces",serif;font-weight:700;font-size:1rem;color:var(--cream);letter-spacing:-0.02em; }
+.cform-body { padding:1.2rem 1.3rem; }
+.cform-row { margin-bottom:1rem; }
+.cform-row label { font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);display:block;margin-bottom:0.35rem; }
+.cform-row input,.cform-row textarea,.cform-row select { width:100%;border:1.5px solid var(--sand-dark);border-radius:2px;padding:0.65rem 0.9rem;font-family:"DM Sans",sans-serif;font-size:0.88rem;background:var(--cream);outline:none;color:var(--ink); }
+.cform-row input:focus,.cform-row textarea:focus,.cform-row select:focus { border-color:var(--rust); }
+.cform-row textarea { min-height:100px;resize:vertical; }
+.cform-2col { display:grid;grid-template-columns:1fr 1fr;gap:0.75rem; }
+.cform-actions { display:flex;gap:0.6rem;padding:1rem 1.3rem;background:var(--cream);border-top:1.5px solid var(--ink); }
+.cbtn { padding:0.6rem 1rem;font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;border-radius:2px;cursor:pointer;border:none;font-family:"DM Sans",sans-serif;transition:all 0.2s; }
+.cbtn-save { background:var(--rust);color:white; }
+.cbtn-save:hover { background:var(--ink); }
+.cbtn-cancel { background:var(--sand);color:var(--ink); }
+.cbtn-delete { background:transparent;color:var(--declined);border:1.5px solid var(--declined); }
+.cbtn-delete:hover { background:var(--declined);color:white; }
+.photo-preview { width:80px;height:80px;border-radius:4px;object-fit:cover;border:1.5px solid var(--sand);margin-top:0.5rem; }
+.content-card { background:var(--white);border:1.5px solid var(--ink);border-radius:4px;padding:1rem 1.2rem;margin-bottom:0.75rem;display:flex;align-items:flex-start;gap:1rem; }
+.content-card-info { flex:1; }
+.content-card-title { font-family:"Fraunces",serif;font-weight:700;font-size:1rem;letter-spacing:-0.02em;margin-bottom:0.2rem; }
+.content-card-meta { font-size:0.75rem;color:var(--muted);line-height:1.5; }
+.content-card-img { width:60px;height:60px;border-radius:4px;object-fit:cover;border:1px solid var(--sand);flex-shrink:0; }
+.toggle-btn { width:36px;height:20px;border-radius:10px;border:none;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0; }
+.toggle-btn.on { background:var(--green); }
+.toggle-btn.off { background:var(--sand-dark); }
+.toggle-btn::after { content:"";position:absolute;width:14px;height:14px;background:white;border-radius:50%;top:3px;transition:left 0.2s; }
+.toggle-btn.on::after { left:19px; }
+.toggle-btn.off::after { left:3px; }
 .toast { position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--cream);padding:0.65rem 1.3rem;border-radius:2px;font-size:0.82rem;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;border-left:3px solid var(--rust);white-space:nowrap; }
 .toast.show { opacity:1; }
 </style>
@@ -199,6 +228,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
   <div class="nav">
     <button class="nav-tab active" onclick="showPage('bookings',this)">📅 Bookings</button>
     <button class="nav-tab" onclick="showPage('trash',this)">🗑 Trash <span class="nav-badge" id="trash-badge" style="display:none;">0</span></button>
+    <button class="nav-tab" onclick="showPage('content',this)">✏️ Content</button>
     <button class="nav-tab" onclick="showPage('settings',this)">⚙️ Settings</button>
   </div>
 
@@ -252,6 +282,42 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
   </div>
 
   <!-- SETTINGS -->
+  <!-- CONTENT PAGE -->
+  <div class="page" id="page-content">
+    <div class="page-scroll">
+      <div class="settings-wrap" style="max-width:700px;">
+        <h2 style="margin-bottom:1.5rem;">Website Content</h2>
+
+        <!-- CONTENT TABS -->
+        <div style="display:flex;gap:0;border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;margin-bottom:1.5rem;width:fit-content;">
+          <button onclick="showContentTab('tours',this)" id="ctab-tours" style="padding:0.6rem 1.2rem;font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);border-right:1px solid var(--sand);">Tours</button>
+          <button onclick="showContentTab('articles',this)" id="ctab-articles" style="padding:0.6rem 1.2rem;font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--white);color:var(--muted);border-right:1px solid var(--sand);">Articles</button>
+          <button onclick="showContentTab('guides',this)" id="ctab-guides" style="padding:0.6rem 1.2rem;font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--white);color:var(--muted);">Guides</button>
+        </div>
+
+        <!-- TOURS TAB -->
+        <div id="ctab-content-tours">
+          <div id="tours-list"><div class="loading">Loading tours...</div></div>
+        </div>
+
+        <!-- ARTICLES TAB -->
+        <div id="ctab-content-articles" style="display:none;">
+          <button onclick="openArticleForm(null)" style="background:var(--rust);color:white;border:none;padding:0.7rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;border-radius:2px;cursor:pointer;margin-bottom:1rem;">+ New Article</button>
+          <div id="articles-list"><div class="loading">Loading articles...</div></div>
+          <div id="article-form" style="display:none;"></div>
+        </div>
+
+        <!-- GUIDES TAB -->
+        <div id="ctab-content-guides" style="display:none;">
+          <button onclick="openGuideForm(null)" style="background:var(--rust);color:white;border:none;padding:0.7rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;border-radius:2px;cursor:pointer;margin-bottom:1rem;">+ New Guide</button>
+          <div id="guides-list"><div class="loading">Loading guides...</div></div>
+          <div id="guide-form" style="display:none;"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <div class="page" id="page-settings">
     <div class="settings-wrap">
       <h2>Settings</h2>
@@ -383,6 +449,278 @@ function showPage(p,el) {
   el.classList.add('active');
   if(p==='trash') renderTrash();
   if(p==='settings') loadSettings();
+  if(p==='content') loadContent();
+}
+
+// ── CONTENT TAB ──
+let toursData=[], articlesData=[], guidesData=[];
+
+function showContentTab(tab, el) {
+  ['tours','articles','guides'].forEach(t => {
+    document.getElementById('ctab-content-'+t).style.display = t===tab ? 'block' : 'none';
+    document.getElementById('ctab-'+t).style.background = t===tab ? 'var(--ink)' : 'var(--white)';
+    document.getElementById('ctab-'+t).style.color = t===tab ? 'var(--cream)' : 'var(--muted)';
+  });
+  if(tab==='tours') renderTours();
+  if(tab==='articles') renderArticles();
+  if(tab==='guides') renderGuides();
+}
+
+async function loadContent() {
+  const [t,a,g] = await Promise.all([
+    fetch(`${SURL}/rest/v1/tours?select=*&order=sort_order`, {headers:hdrs()}).then(r=>r.json()),
+    fetch(`${SURL}/rest/v1/articles?select=*&order=published_at.desc`, {headers:hdrs()}).then(r=>r.json()),
+    fetch(`${SURL}/rest/v1/guides?select=*&order=sort_order`, {headers:hdrs()}).then(r=>r.json()),
+  ]);
+  toursData = Array.isArray(t)?t:[];
+  articlesData = Array.isArray(a)?a:[];
+  guidesData = Array.isArray(g)?g:[];
+  renderTours();
+}
+
+// TOURS
+function renderTours() {
+  const el = document.getElementById('tours-list');
+  if(!toursData.length){el.innerHTML='<div class="empty-msg">No tours found.</div>';return;}
+  el.innerHTML = toursData.map(t => `
+    <div class="cform">
+      <div class="cform-head">
+        <h3>${t.icon} ${t.title}</h3>
+        <button class="toggle-btn ${t.active?'on':'off'}" onclick="toggleTour('${t.id}',${t.active})" title="${t.active?'Active':'Hidden'}"></button>
+      </div>
+      <div class="cform-body">
+        <div class="cform-2col">
+          <div class="cform-row"><label>Title</label><input id="t-title-${t.id}" value="${t.title}"></div>
+          <div class="cform-row"><label>Icon (emoji)</label><input id="t-icon-${t.id}" value="${t.icon}" style="font-size:1.2rem;"></div>
+        </div>
+        <div class="cform-row"><label>Description</label><textarea id="t-desc-${t.id}">${t.description}</textarea></div>
+        <div class="cform-2col">
+          <div class="cform-row"><label>Duration</label><input id="t-dur-${t.id}" value="${t.duration}"></div>
+          <div class="cform-row"><label>Max group size</label><input id="t-max-${t.id}" type="number" value="${t.max_group}"></div>
+        </div>
+        <div class="cform-row"><label>Price (DKK per person)</label><input id="t-price-${t.id}" type="number" value="${t.price_dkk}"></div>
+      </div>
+      <div class="cform-actions">
+        <button class="cbtn cbtn-save" onclick="saveTour('${t.id}')">Save changes</button>
+      </div>
+    </div>`).join('');
+}
+
+async function saveTour(id) {
+  const body = {
+    title: document.getElementById('t-title-'+id).value,
+    icon:  document.getElementById('t-icon-'+id).value,
+    description: document.getElementById('t-desc-'+id).value,
+    duration: document.getElementById('t-dur-'+id).value,
+    max_group: parseInt(document.getElementById('t-max-'+id).value),
+    price_dkk: parseInt(document.getElementById('t-price-'+id).value),
+  };
+  const r = await fetch(`${SURL}/rest/v1/tours?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify(body)});
+  if(r.ok) { showToast('Tour saved!'); await loadContent(); }
+  else showToast('Something went wrong.');
+}
+
+async function toggleTour(id, current) {
+  const r = await fetch(`${SURL}/rest/v1/tours?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify({active:!current})});
+  if(r.ok) { showToast('Tour '+(current?'hidden':'shown')+'!'); await loadContent(); }
+}
+
+// ARTICLES
+function renderArticles() {
+  const el = document.getElementById('articles-list');
+  document.getElementById('article-form').style.display='none';
+  if(!articlesData.length){el.innerHTML='<div class="empty-msg" style="padding:2rem 0;">No articles yet. Click + New Article to create one.</div>';return;}
+  el.innerHTML = articlesData.map(a => `
+    <div class="content-card">
+      ${a.photo_url ? `<img src="${a.photo_url}" class="content-card-img">` : '<div style="width:60px;height:60px;background:var(--sand);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">📰</div>'}
+      <div class="content-card-info">
+        <div class="content-card-title">${a.title}</div>
+        <div class="content-card-meta">${a.category} · ${a.published_at} · ${a.active?'<span style="color:var(--green);">Published</span>':'<span style="color:var(--muted);">Hidden</span>'}</div>
+      </div>
+      <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+        <button class="cbtn cbtn-save" onclick="openArticleForm('${a.id}')" style="padding:0.4rem 0.7rem;font-size:0.7rem;">Edit</button>
+        <button class="cbtn cbtn-delete" onclick="deleteArticle('${a.id}')" style="padding:0.4rem 0.7rem;font-size:0.7rem;">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function openArticleForm(id) {
+  const a = id ? articlesData.find(x=>x.id===id) : null;
+  const el = document.getElementById('article-form');
+  el.style.display='block';
+  el.innerHTML = `
+    <div class="cform" style="margin-top:1rem;">
+      <div class="cform-head"><h3>${a?'Edit':'New'} Article</h3></div>
+      <div class="cform-body">
+        <div class="cform-row"><label>Title</label><input id="af-title" value="${a?a.title:''}"></div>
+        <div class="cform-row"><label>Body text</label><textarea id="af-body" style="min-height:150px;">${a?a.body:''}</textarea></div>
+        <div class="cform-2col">
+          <div class="cform-row"><label>Category</label>
+            <select id="af-cat">
+              <option ${(!a||a.category==='news')?'selected':''}>news</option>
+              <option ${(a&&a.category==='update')?'selected':''}>update</option>
+              <option ${(a&&a.category==='guide')?'selected':''}>guide</option>
+              <option ${(a&&a.category==='event')?'selected':''}>event</option>
+            </select>
+          </div>
+          <div class="cform-row"><label>Published date</label><input id="af-date" type="date" value="${a?a.published_at:new Date().toISOString().split('T')[0]}"></div>
+        </div>
+        <div class="cform-row">
+          <label>Photo</label>
+          <input type="file" id="af-photo" accept="image/*" onchange="previewPhoto(this,'af-preview')">
+          ${a&&a.photo_url?`<img id="af-preview" src="${a.photo_url}" class="photo-preview">`:`<img id="af-preview" class="photo-preview" style="display:none;">`}
+        </div>
+        <div class="cform-row"><label>Visible on website</label>
+          <select id="af-active"><option value="true" ${(!a||a.active)?'selected':''}>Yes — Published</option><option value="false" ${(a&&!a.active)?'selected':''}>No — Hidden</option></select>
+        </div>
+      </div>
+      <div class="cform-actions">
+        <button class="cbtn cbtn-save" onclick="saveArticle('${id||''}')">Save article</button>
+        <button class="cbtn cbtn-cancel" onclick="document.getElementById('article-form').style.display='none'">Cancel</button>
+      </div>
+    </div>`;
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+function previewPhoto(input, previewId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById(previewId);
+    img.src = e.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadPhoto(file, folder) {
+  const ext = file.name.split('.').pop();
+  const path = folder + '/' + Date.now() + '.' + ext;
+  const r = await fetch(`${SURL}/storage/v1/object/photos/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SKEY, 'Authorization': 'Bearer ' + SKEY, 'Content-Type': file.type },
+    body: file
+  });
+  if (!r.ok) return null;
+  return `${SURL}/storage/v1/object/public/photos/${path}`;
+}
+
+async function saveArticle(id) {
+  let photo_url = id ? (articlesData.find(x=>x.id===id)||{}).photo_url : null;
+  const fileInput = document.getElementById('af-photo');
+  if (fileInput.files[0]) {
+    showToast('Uploading photo...');
+    photo_url = await uploadPhoto(fileInput.files[0], 'articles');
+  }
+  const body = {
+    title: document.getElementById('af-title').value,
+    body:  document.getElementById('af-body').value,
+    category: document.getElementById('af-cat').value,
+    published_at: document.getElementById('af-date').value,
+    active: document.getElementById('af-active').value === 'true',
+    photo_url,
+  };
+  let r;
+  if (id) {
+    r = await fetch(`${SURL}/rest/v1/articles?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify(body)});
+  } else {
+    r = await fetch(`${SURL}/rest/v1/articles`, {method:'POST', headers:jhdrs(), body:JSON.stringify(body)});
+  }
+  if(r.ok) { showToast('Article saved!'); await loadContent(); renderArticles(); }
+  else showToast('Something went wrong.');
+}
+
+async function deleteArticle(id) {
+  if(!confirm('Delete this article permanently?')) return;
+  const r = await fetch(`${SURL}/rest/v1/articles?id=eq.${id}`, {method:'DELETE', headers:hdrs()});
+  if(r.ok) { showToast('Article deleted.'); await loadContent(); renderArticles(); }
+  else showToast('Something went wrong.');
+}
+
+// GUIDES
+function renderGuides() {
+  const el = document.getElementById('guides-list');
+  document.getElementById('guide-form').style.display='none';
+  if(!guidesData.length){el.innerHTML='<div class="empty-msg" style="padding:2rem 0;">No guides yet. Click + New Guide to add one.</div>';return;}
+  el.innerHTML = guidesData.map(g => `
+    <div class="content-card">
+      ${g.photo_url ? `<img src="${g.photo_url}" class="content-card-img" style="border-radius:50%;">` : '<div style="width:60px;height:60px;background:var(--sand);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👤</div>'}
+      <div class="content-card-info">
+        <div class="content-card-title">${g.name}</div>
+        <div class="content-card-meta">${g.languages} · ${g.active?'<span style="color:var(--green);">Active</span>':'<span style="color:var(--muted);">Hidden</span>'}</div>
+        <div class="content-card-meta" style="margin-top:0.2rem;">${g.bio.substring(0,80)}...</div>
+      </div>
+      <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+        <button class="cbtn cbtn-save" onclick="openGuideForm('${g.id}')" style="padding:0.4rem 0.7rem;font-size:0.7rem;">Edit</button>
+        <button class="cbtn cbtn-delete" onclick="deleteGuide('${g.id}')" style="padding:0.4rem 0.7rem;font-size:0.7rem;">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function openGuideForm(id) {
+  const g = id ? guidesData.find(x=>x.id===id) : null;
+  const el = document.getElementById('guide-form');
+  el.style.display='block';
+  el.innerHTML = `
+    <div class="cform" style="margin-top:1rem;">
+      <div class="cform-head"><h3>${g?'Edit':'New'} Guide</h3></div>
+      <div class="cform-body">
+        <div class="cform-row">
+          <label>Profile photo</label>
+          <input type="file" id="gf-photo" accept="image/*" onchange="previewPhoto(this,'gf-preview')">
+          ${g&&g.photo_url?`<img id="gf-preview" src="${g.photo_url}" class="photo-preview" style="border-radius:50%;">`:`<img id="gf-preview" class="photo-preview" style="display:none;border-radius:50%;">`}
+        </div>
+        <div class="cform-row"><label>Full name</label><input id="gf-name" value="${g?g.name:''}"></div>
+        <div class="cform-row"><label>Bio</label><textarea id="gf-bio" style="min-height:120px;">${g?g.bio:''}</textarea></div>
+        <div class="cform-row"><label>Languages spoken</label><input id="gf-lang" value="${g?g.languages:''}" placeholder="e.g. Danish, English, French, Arabic"></div>
+        <div class="cform-2col">
+          <div class="cform-row"><label>Instagram (optional)</label><input id="gf-ig" value="${g&&g.instagram?g.instagram:''}" placeholder="@username"></div>
+          <div class="cform-row"><label>Facebook (optional)</label><input id="gf-fb" value="${g&&g.facebook?g.facebook:''}" placeholder="facebook.com/..."></div>
+        </div>
+        <div class="cform-row"><label>Visible on website</label>
+          <select id="gf-active"><option value="true" ${(!g||g.active)?'selected':''}>Yes — Active</option><option value="false" ${(g&&!g.active)?'selected':''}>No — Hidden</option></select>
+        </div>
+      </div>
+      <div class="cform-actions">
+        <button class="cbtn cbtn-save" onclick="saveGuide('${id||''}')">Save guide</button>
+        <button class="cbtn cbtn-cancel" onclick="document.getElementById('guide-form').style.display='none'">Cancel</button>
+      </div>
+    </div>`;
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+async function saveGuide(id) {
+  let photo_url = id ? (guidesData.find(x=>x.id===id)||{}).photo_url : null;
+  const fileInput = document.getElementById('gf-photo');
+  if (fileInput.files[0]) {
+    showToast('Uploading photo...');
+    photo_url = await uploadPhoto(fileInput.files[0], 'guides');
+  }
+  const body = {
+    name: document.getElementById('gf-name').value,
+    bio:  document.getElementById('gf-bio').value,
+    languages: document.getElementById('gf-lang').value,
+    instagram: document.getElementById('gf-ig').value || null,
+    facebook:  document.getElementById('gf-fb').value || null,
+    active: document.getElementById('gf-active').value === 'true',
+    photo_url,
+  };
+  let r;
+  if (id) {
+    r = await fetch(`${SURL}/rest/v1/guides?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify(body)});
+  } else {
+    r = await fetch(`${SURL}/rest/v1/guides`, {method:'POST', headers:jhdrs(), body:JSON.stringify(body)});
+  }
+  if(r.ok) { showToast('Guide saved!'); await loadContent(); renderGuides(); }
+  else showToast('Something went wrong.');
+}
+
+async function deleteGuide(id) {
+  if(!confirm('Delete this guide permanently?')) return;
+  const r = await fetch(`${SURL}/rest/v1/guides?id=eq.${id}`, {method:'DELETE', headers:hdrs()});
+  if(r.ok) { showToast('Guide deleted.'); await loadContent(); renderGuides(); }
+  else showToast('Something went wrong.');
 }
 
 // STATS
