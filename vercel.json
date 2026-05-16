@@ -4,16 +4,5 @@
       "source": "/api/booking-action",
       "destination": "https://mzcsiqquiigetvwivnhy.supabase.co/functions/v1/booking-action"
     }
-  ],
-  "headers": [
-    {
-      "source": "/api/booking-action(.*)",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/html; charset=utf-8"
-        }
-      ]
-    }
   ]
 }
