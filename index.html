@@ -1265,8 +1265,6 @@
               <p style="font-size:1rem;font-weight:300;color:var(--muted);line-height:1.8;margin-bottom:1rem;">${g.bio}</p>
               <ul class="about-bullets" style="margin:1.5rem 0 1.5rem;">
                 <li>Speaks: ${g.languages}</li>
-                ${g.instagram?`<li>Instagram: <a href="https://instagram.com/${g.instagram.replace('@','')}" style="color:var(--rust);">${g.instagram}</a></li>`:''}
-                ${g.facebook?`<li>Facebook: <a href="${g.facebook}" style="color:var(--rust);">Facebook profile</a></li>`:''}
               </ul>
               <a href="#book" class="btn-primary">Book a tour with ${g.name.split(' ')[0]}</a>
             </div>
