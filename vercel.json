@@ -1,8 +1,1 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/booking-action",
-      "destination": "https://mzcsiqquiigetvwivnhy.supabase.co/functions/v1/booking-action"
-    }
-  ]
-}
+{}
