@@ -8,627 +8,551 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --cream: #F5F0E8;
-    --ink: #1A1714;
-    --rust: #C4532A;
-    --sand: #D9C9A8;
-    --sand-dark: #B8A070;
-    --green: #2D4A35;
-    --green-light: #4A7A58;
-    --muted: #6B5F52;
-    --white: #FDFAF5;
-    --pending: #E8A020;
-    --accepted: #2D4A35;
-    --declined: #A32D2D;
+    --cream: #F5F0E8; --ink: #1A1714; --rust: #C4532A;
+    --sand: #D9C9A8; --sand-dark: #B8A070;
+    --green: #2D4A35; --green-light: #4A7A58;
+    --muted: #6B5F52; --white: #FDFAF5;
+    --pending: #E8A020; --declined: #A32D2D;
   }
   html { scroll-behavior: smooth; }
   body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
 
-  /* ── HEADER ── */
-  header {
-    background: var(--ink);
-    padding: 1rem 2rem;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-    border-bottom: 2px solid var(--rust);
-  }
-  .logo { font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.4rem; color: var(--cream); letter-spacing: -0.03em; }
-  .logo span { color: var(--rust); }
-  .header-right { display: flex; align-items: center; gap: 1rem; }
-  .header-stat { text-align: center; }
-  .header-stat .n { font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.4rem; color: var(--cream); line-height: 1; }
-  .header-stat .l { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sand-dark); }
-  .header-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.15); }
+  #auth-screen { position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:9999; }
+  .auth-card { background:var(--white);border:1.5px solid var(--rust);border-radius:4px;padding:3rem 2.5rem;max-width:380px;width:90%;text-align:center; }
+  .auth-logo { font-family:'Fraunces',serif;font-weight:900;font-size:1.8rem;letter-spacing:-0.04em;margin-bottom:0.5rem; }
+  .auth-logo span { color:var(--rust); }
+  .auth-sub { font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:2rem; }
+  .auth-input { width:100%;border:1.5px solid var(--sand-dark);border-radius:2px;padding:0.85rem 1rem;font-family:'DM Sans',sans-serif;font-size:1rem;background:var(--cream);outline:none;margin-bottom:0.75rem;color:var(--ink);text-align:center;letter-spacing:0.1em; }
+  .auth-input:focus { border-color:var(--rust); }
+  .auth-error { display:none;color:var(--declined);font-size:0.82rem;margin-bottom:0.75rem; }
+  .auth-btn { width:100%;background:var(--rust);color:white;border:none;padding:0.9rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;border-radius:2px;cursor:pointer;transition:background 0.2s; }
+  .auth-btn:hover { background:var(--ink); }
 
-  /* ── LAYOUT ── */
-  .layout { display: grid; grid-template-columns: 340px 1fr; min-height: calc(100vh - 60px); }
+  header { background:var(--ink);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--rust); }
+  .logo { font-family:'Fraunces',serif;font-weight:900;font-size:1.4rem;color:var(--cream);letter-spacing:-0.03em; }
+  .logo span { color:var(--rust); }
+  .logo small { font-size:0.8rem;font-weight:300;color:var(--sand-dark);font-family:'DM Sans',sans-serif;letter-spacing:0; }
+  .header-right { display:flex;align-items:center;gap:1rem; }
+  .header-stat .n { font-family:'Fraunces',serif;font-weight:900;font-size:1.4rem;color:var(--cream);line-height:1; }
+  .header-stat .l { font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--sand-dark); }
+  .header-divider { width:1px;height:32px;background:rgba(255,255,255,0.15); }
 
-  /* ── SIDEBAR ── */
-  .sidebar {
-    background: var(--white);
-    border-right: 1.5px solid var(--ink);
-    display: flex; flex-direction: column;
-    overflow: hidden;
-  }
-  .sidebar-tabs {
-    display: flex;
-    border-bottom: 1.5px solid var(--ink);
-  }
-  .sidebar-tab {
-    flex: 1; padding: 0.85rem 0.5rem;
-    font-size: 0.72rem; font-weight: 500;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    text-align: center; cursor: pointer;
-    color: var(--muted);
-    border-right: 1.5px solid var(--ink);
-    transition: all 0.2s;
-    background: transparent; border-top: none; border-bottom: none; border-left: none;
-  }
-  .sidebar-tab:last-child { border-right: none; }
-  .sidebar-tab.active { background: var(--ink); color: var(--cream); }
-  .sidebar-tab .count {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 18px; height: 18px; border-radius: 50%;
-    font-size: 0.65rem; font-weight: 700;
-    margin-left: 4px;
-    background: var(--rust); color: white;
-  }
-  .sidebar-tab.active .count { background: var(--rust); }
+  .nav-tabs { display:flex;background:var(--white);border-bottom:1.5px solid var(--ink); }
+  .nav-tab { padding:0.9rem 1.8rem;font-size:0.78rem;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:2.5px solid transparent;transition:all 0.2s;font-family:'DM Sans',sans-serif; }
+  .nav-tab:hover { color:var(--ink); }
+  .nav-tab.active { color:var(--rust);border-bottom-color:var(--rust); }
+  .nav-badge { display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-size:0.65rem;font-weight:700;margin-left:5px;background:var(--rust);color:white; }
 
-  .booking-list { overflow-y: auto; flex: 1; }
-  .booking-item {
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid var(--sand);
-    cursor: pointer;
-    transition: background 0.15s;
-    position: relative;
-  }
-  .booking-item:hover { background: var(--cream); }
-  .booking-item.selected { background: var(--cream); border-left: 3px solid var(--rust); }
-  .booking-item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.3rem; }
-  .booking-name { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1rem; letter-spacing: -0.02em; }
-  .status-badge {
-    font-size: 0.62rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    padding: 0.2rem 0.5rem; border-radius: 2px;
-    flex-shrink: 0;
-  }
-  .status-pending { background: #FEF3C7; color: #92400E; }
-  .status-accepted { background: #D1FAE5; color: #065F46; }
-  .status-declined { background: #FEE2E2; color: #991B1B; }
-  .booking-item-meta { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
-  .booking-item-tour { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
-  .empty-state { padding: 3rem 1.5rem; text-align: center; color: var(--muted); font-size: 0.85rem; line-height: 1.7; }
+  .layout { display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 108px); }
+  .sidebar { background:var(--white);border-right:1.5px solid var(--ink);display:flex;flex-direction:column;overflow:hidden; }
+  .sidebar-tabs { display:flex;border-bottom:1.5px solid var(--ink); }
+  .sidebar-tab { flex:1;padding:0.75rem 0.4rem;font-size:0.68rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;text-align:center;cursor:pointer;color:var(--muted);border:none;border-right:1.5px solid var(--ink);background:transparent;transition:all 0.2s;font-family:'DM Sans',sans-serif; }
+  .sidebar-tab:last-child { border-right:none; }
+  .sidebar-tab.active { background:var(--ink);color:var(--cream); }
+  .sidebar-tab .count { display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:0.6rem;font-weight:700;margin-left:3px;background:var(--rust);color:white; }
+  .booking-list { overflow-y:auto;flex:1; }
+  .booking-item { padding:0.9rem 1.2rem;border-bottom:1px solid var(--sand);cursor:pointer;transition:background 0.15s; }
+  .booking-item:hover { background:var(--cream); }
+  .booking-item.selected { background:var(--cream);border-left:3px solid var(--rust); }
+  .booking-item-top { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.25rem;gap:0.5rem; }
+  .booking-name { font-family:'Fraunces',serif;font-weight:700;font-size:0.95rem;letter-spacing:-0.02em; }
+  .booking-num { font-size:0.68rem;color:var(--muted);font-weight:400; }
+  .status-badge { font-size:0.6rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;padding:0.2rem 0.45rem;border-radius:2px;flex-shrink:0; }
+  .status-pending { background:#FEF3C7;color:#92400E; }
+  .status-accepted { background:#D1FAE5;color:#065F46; }
+  .status-declined { background:#FEE2E2;color:#991B1B; }
+  .booking-item-meta { font-size:0.75rem;color:var(--muted);line-height:1.5; }
+  .booking-item-tour { font-size:0.7rem;color:var(--muted);margin-top:0.15rem; }
+  .empty-state { padding:3rem 1.5rem;text-align:center;color:var(--muted);font-size:0.85rem;line-height:1.7; }
 
-  /* ── MAIN ── */
-  .main { display: flex; flex-direction: column; overflow: hidden; }
+  .main { display:flex;flex-direction:column;overflow:hidden; }
+  .calendar-section { background:var(--white);border-bottom:1.5px solid var(--ink);padding:1.2rem 2rem; }
+  .calendar-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem; }
+  .calendar-title { font-family:'Fraunces',serif;font-weight:900;font-size:1.4rem;letter-spacing:-0.04em; }
+  .cal-nav { display:flex;gap:0.5rem; }
+  .cal-btn { width:30px;height:30px;background:transparent;border:1.5px solid var(--ink);border-radius:2px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;transition:all 0.15s; }
+  .cal-btn:hover { background:var(--ink);color:var(--cream); }
+  .calendar-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:2px; }
+  .cal-day-label { text-align:center;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);padding:0.25rem 0; }
+  .cal-day { aspect-ratio:1;border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.75rem;cursor:pointer;transition:all 0.15s;min-height:38px;background:var(--cream); }
+  .cal-day:hover { background:var(--sand); }
+  .cal-day.other-month { color:var(--sand-dark);background:transparent; }
+  .cal-day.today { border:1.5px solid var(--rust);font-weight:700; }
+  .cal-day.selected { background:var(--ink);color:var(--cream); }
+  .cal-day-num { font-weight:500;line-height:1; }
+  .cal-dots { display:flex;gap:2px;margin-top:2px; }
+  .cal-dot { width:4px;height:4px;border-radius:50%; }
+  .cal-dot.pending { background:var(--pending); }
+  .cal-dot.accepted { background:var(--green); }
+  .cal-dot.declined { background:var(--declined); }
 
-  /* ── CALENDAR ── */
-  .calendar-section {
-    background: var(--white);
-    border-bottom: 1.5px solid var(--ink);
-    padding: 1.5rem 2rem;
-  }
-  .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
-  .calendar-title { font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.6rem; letter-spacing: -0.04em; }
-  .cal-nav { display: flex; gap: 0.5rem; }
-  .cal-btn {
-    width: 32px; height: 32px;
-    background: transparent; border: 1.5px solid var(--ink);
-    border-radius: 2px; cursor: pointer;
-    font-size: 1rem; display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
-  }
-  .cal-btn:hover { background: var(--ink); color: var(--cream); }
-  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-  .cal-day-label {
-    text-align: center; font-size: 0.65rem;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--muted); padding: 0.3rem 0;
-  }
-  .cal-day {
-    aspect-ratio: 1;
-    border-radius: 2px;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    font-size: 0.8rem; cursor: pointer;
-    position: relative; transition: all 0.15s;
-    min-height: 44px;
-    background: var(--cream);
-  }
-  .cal-day:hover { background: var(--sand); }
-  .cal-day.other-month { color: var(--sand-dark); background: transparent; }
-  .cal-day.today { border: 1.5px solid var(--rust); font-weight: 700; }
-  .cal-day.selected { background: var(--ink); color: var(--cream); }
-  .cal-day.selected:hover { background: var(--ink); }
-  .cal-day-num { font-weight: 500; line-height: 1; }
-  .cal-dots { display: flex; gap: 2px; margin-top: 3px; }
-  .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
-  .cal-dot.pending { background: var(--pending); }
-  .cal-dot.accepted { background: var(--green); }
-  .cal-dot.declined { background: var(--declined); }
+  .detail-panel { flex:1;overflow-y:auto;padding:1.5rem 2rem; }
+  .detail-empty { display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);text-align:center;gap:1rem; }
+  .detail-empty-icon { font-size:2.5rem;opacity:0.3; }
+  .detail-empty p { font-size:0.85rem;line-height:1.7;max-width:260px; }
+  .detail-card { background:var(--white);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;max-width:580px; }
+  .detail-card-header { background:var(--ink);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between; }
+  .detail-card-header h2 { font-family:'Fraunces',serif;font-weight:900;font-size:1.2rem;letter-spacing:-0.03em;color:var(--cream); }
+  .detail-card-num { font-size:0.72rem;color:var(--sand-dark);font-weight:300;letter-spacing:0.05em; }
+  .detail-body { padding:1.2rem 1.5rem; }
+  .detail-row { display:flex;gap:1rem;padding:0.65rem 0;border-bottom:1px solid var(--sand);font-size:0.88rem; }
+  .detail-row:last-child { border-bottom:none; }
+  .detail-label { color:var(--muted);width:100px;flex-shrink:0;font-size:0.78rem;padding-top:1px; }
+  .detail-value { color:var(--ink);font-weight:500;flex:1; }
+  .detail-notes { color:var(--muted);font-style:italic;font-weight:300; }
+  .detail-actions { padding:1rem 1.5rem;background:var(--cream);display:flex;gap:0.6rem;border-top:1.5px solid var(--ink);flex-wrap:wrap; }
+  .action-btn { display:inline-flex;align-items:center;gap:0.4rem;padding:0.6rem 1rem;font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;border-radius:2px;cursor:pointer;border:none;transition:all 0.2s;font-family:'DM Sans',sans-serif; }
+  .btn-accept { background:var(--green);color:white; }
+  .btn-accept:hover { background:var(--green-light); }
+  .btn-decline { background:var(--declined);color:white; }
+  .btn-decline:hover { background:#C23333; }
+  .btn-cancel { background:var(--sand);color:var(--ink); }
+  .btn-cancel:hover { background:var(--sand-dark); }
+  .btn-trash { background:transparent;color:var(--declined);border:1.5px solid var(--declined); }
+  .btn-trash:hover { background:var(--declined);color:white; }
 
-  /* ── DETAIL PANEL ── */
-  .detail-panel {
-    flex: 1; overflow-y: auto;
-    padding: 2rem;
-  }
-  .detail-empty {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    height: 100%; color: var(--muted);
-    text-align: center; gap: 1rem;
-  }
-  .detail-empty-icon { font-size: 3rem; opacity: 0.3; }
-  .detail-empty p { font-size: 0.9rem; line-height: 1.7; max-width: 260px; }
+  .day-panel { background:var(--cream);border:1.5px solid var(--ink);border-radius:4px;margin-bottom:1.5rem;overflow:hidden;max-width:580px; }
+  .day-panel-header { background:var(--rust);padding:0.65rem 1.2rem;font-family:'Fraunces',serif;font-weight:700;font-size:0.95rem;color:white;letter-spacing:-0.02em; }
+  .day-slot { padding:0.75rem 1.2rem;border-bottom:1px solid var(--sand);display:flex;align-items:center;justify-content:space-between;gap:1rem; }
+  .day-slot:last-child { border-bottom:none; }
+  .slot-time { font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);min-width:75px; }
+  .slot-name { font-weight:500;font-size:0.88rem; }
+  .slot-tour { font-size:0.72rem;color:var(--muted); }
+  .slot-free { color:var(--muted);font-size:0.8rem;font-style:italic; }
 
-  .detail-card {
-    background: var(--white);
-    border: 1.5px solid var(--ink);
-    border-radius: 4px;
-    overflow: hidden;
-    max-width: 600px;
-  }
-  .detail-card-header {
-    background: var(--ink);
-    padding: 1.2rem 1.5rem;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .detail-card-header h2 {
-    font-family: 'Fraunces', serif; font-weight: 900;
-    font-size: 1.3rem; letter-spacing: -0.03em;
-    color: var(--cream);
-  }
-  .detail-body { padding: 1.5rem; }
-  .detail-row {
-    display: flex; gap: 1rem;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--sand);
-    font-size: 0.9rem;
-  }
-  .detail-row:last-child { border-bottom: none; }
-  .detail-label { color: var(--muted); width: 110px; flex-shrink: 0; font-size: 0.82rem; padding-top: 1px; }
-  .detail-value { color: var(--ink); font-weight: 500; flex: 1; }
-  .detail-notes { color: var(--muted); font-style: italic; font-weight: 300; }
+  .page { display:none; }
+  .page.active { display:block; }
+  .page-scroll { height:calc(100vh - 108px);overflow-y:auto; }
 
-  .detail-actions {
-    padding: 1.2rem 1.5rem;
-    background: var(--cream);
-    display: flex; gap: 0.75rem;
-    border-top: 1.5px solid var(--ink);
-    flex-wrap: wrap;
-  }
-  .action-btn {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    padding: 0.65rem 1.2rem;
-    font-size: 0.8rem; font-weight: 500;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    border-radius: 2px; cursor: pointer; border: none;
-    transition: all 0.2s; font-family: 'DM Sans', sans-serif;
-  }
-  .btn-accept { background: var(--green); color: white; }
-  .btn-accept:hover { background: var(--green-light); }
-  .btn-decline { background: var(--declined); color: white; }
-  .btn-decline:hover { background: #C23333; }
-  .btn-cancel { background: var(--sand); color: var(--ink); }
-  .btn-cancel:hover { background: var(--sand-dark); }
-  .btn-delete { background: transparent; color: var(--declined); border: 1.5px solid var(--declined); }
-  .btn-delete:hover { background: var(--declined); color: white; }
+  .trash-item { padding:1rem 1.5rem;border-bottom:1px solid var(--sand);display:flex;align-items:center;gap:1rem;background:var(--white); }
+  .trash-info { flex:1; }
+  .trash-name { font-family:'Fraunces',serif;font-weight:700;font-size:0.95rem; }
+  .trash-meta { font-size:0.75rem;color:var(--muted);margin-top:0.2rem;line-height:1.5; }
+  .trash-days { font-size:0.72rem;font-weight:600;flex-shrink:0;text-align:right;min-width:70px; }
+  .trash-actions { display:flex;gap:0.5rem;flex-shrink:0; }
+  .trash-btn { padding:0.4rem 0.75rem;font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;border-radius:2px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s; }
 
-  /* ── TOAST ── */
-  .toast {
-    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
-    background: var(--ink); color: var(--cream);
-    padding: 0.75rem 1.5rem; border-radius: 2px;
-    font-size: 0.85rem; font-weight: 500;
-    z-index: 999; opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-    border-left: 3px solid var(--rust);
-  }
-  .toast.show { opacity: 1; }
+  .settings-panel { padding:2rem;max-width:500px; }
+  .settings-card { background:var(--white);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;margin-bottom:1.5rem; }
+  .settings-card-header { background:var(--ink);padding:1rem 1.5rem; }
+  .settings-card-header h3 { font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;color:var(--cream);letter-spacing:-0.02em; }
+  .settings-card-header p { font-size:0.75rem;color:var(--sand-dark);margin-top:0.2rem; }
+  .settings-body { padding:1.5rem; }
+  .settings-row { display:flex;gap:0.75rem;align-items:flex-end; }
+  .settings-field { flex:1; }
+  .settings-label { font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.4rem;display:block; }
+  .settings-input { width:100%;border:1.5px solid var(--sand-dark);border-radius:2px;padding:0.75rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;background:var(--cream);outline:none;color:var(--ink); }
+  .settings-input:focus { border-color:var(--rust); }
+  .settings-save { background:var(--rust);color:white;border:none;padding:0.75rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;border-radius:2px;cursor:pointer;white-space:nowrap;transition:background 0.2s; }
+  .settings-save:hover { background:var(--ink); }
+  .settings-note { font-size:0.78rem;color:var(--muted);margin-top:0.75rem;line-height:1.6; }
 
-  /* ── DAY BOOKINGS PANEL ── */
-  .day-panel {
-    background: var(--cream);
-    border: 1.5px solid var(--ink);
-    border-radius: 4px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-    max-width: 600px;
-  }
-  .day-panel-header {
-    background: var(--rust);
-    padding: 0.75rem 1.2rem;
-    font-family: 'Fraunces', serif;
-    font-weight: 700; font-size: 1rem;
-    color: white; letter-spacing: -0.02em;
-  }
-  .day-slot {
-    padding: 0.85rem 1.2rem;
-    border-bottom: 1px solid var(--sand);
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 1rem;
-  }
-  .day-slot:last-child { border-bottom: none; }
-  .slot-time { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); min-width: 80px; }
-  .slot-info { flex: 1; }
-  .slot-name { font-weight: 500; font-size: 0.9rem; }
-  .slot-tour { font-size: 0.75rem; color: var(--muted); }
-  .slot-free { color: var(--muted); font-size: 0.82rem; font-style: italic; }
-
-  .loading { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.9rem; }
-
-  @media (max-width: 900px) {
-    .layout { grid-template-columns: 1fr; }
-    .sidebar { max-height: 50vh; }
-  }
+  .toast { position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--cream);padding:0.75rem 1.5rem;border-radius:2px;font-size:0.85rem;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;border-left:3px solid var(--rust); }
+  .toast.show { opacity:1; }
+  .loading { text-align:center;padding:3rem;color:var(--muted);font-size:0.9rem; }
 </style>
 </head>
 <body>
 
-<div id="app" style="display:none;flex-direction:column;min-height:100vh;">
-<!-- HEADER -->
-<header>
-  <div class="logo">goodgood<span>copenhagen</span>. <span style="font-size:0.8rem;font-weight:300;color:var(--sand-dark);font-family:'DM Sans',sans-serif;letter-spacing:0;"> admin</span></div>
-  <div class="header-right">
-    <div class="header-stat"><div class="n" id="stat-pending">–</div><div class="l">Pending</div></div>
-    <div class="header-divider"></div>
-    <div class="header-stat"><div class="n" id="stat-accepted">–</div><div class="l">Accepted</div></div>
-    <div class="header-divider"></div>
-    <div class="header-stat"><div class="n" id="stat-total">–</div><div class="l">Total</div></div>
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">goodgood<span>copenhagen</span>.</div>
+    <div class="auth-sub">Admin Dashboard</div>
+    <input class="auth-input" id="pw-input" type="password" placeholder="Enter password">
+    <div class="auth-error" id="pw-error">Wrong password. Try again.</div>
+    <button class="auth-btn" onclick="tryLogin()">Enter Dashboard</button>
   </div>
-</header>
+</div>
 
-<div class="layout">
+<!-- APP -->
+<div id="app" style="display:none;">
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-tabs">
-      <button class="sidebar-tab active" onclick="filterTab('all')" id="tab-all">All <span class="count" id="cnt-all">0</span></button>
-      <button class="sidebar-tab" onclick="filterTab('pending')" id="tab-pending">Pending <span class="count" id="cnt-pending">0</span></button>
-      <button class="sidebar-tab" onclick="filterTab('accepted')" id="tab-accepted">Accepted <span class="count" id="cnt-accepted">0</span></button>
+  <header>
+    <div class="logo">goodgood<span>copenhagen</span>. <small>admin</small></div>
+    <div class="header-right">
+      <div class="header-stat"><div class="n" id="stat-pending">–</div><div class="l">Pending</div></div>
+      <div class="header-divider"></div>
+      <div class="header-stat"><div class="n" id="stat-accepted">–</div><div class="l">Accepted</div></div>
+      <div class="header-divider"></div>
+      <div class="header-stat"><div class="n" id="stat-total">–</div><div class="l">Total</div></div>
     </div>
-    <div class="booking-list" id="booking-list">
-      <div class="loading">Loading bookings…</div>
-    </div>
+  </header>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('bookings',this)">📅 Bookings</button>
+    <button class="nav-tab" onclick="showPage('trash',this)">🗑 Trash <span class="nav-badge" id="trash-badge" style="display:none;">0</span></button>
+    <button class="nav-tab" onclick="showPage('settings',this)">⚙️ Settings</button>
   </div>
 
-  <!-- MAIN -->
-  <div class="main">
-
-    <!-- CALENDAR -->
-    <div class="calendar-section">
-      <div class="calendar-header">
-        <div class="calendar-title" id="cal-title"></div>
-        <div class="cal-nav">
-          <button class="cal-btn" onclick="changeMonth(-1)">←</button>
-          <button class="cal-btn" onclick="changeMonth(1)">→</button>
+  <!-- BOOKINGS PAGE -->
+  <div class="page active" id="page-bookings">
+    <div class="layout">
+      <div class="sidebar">
+        <div class="sidebar-tabs">
+          <button class="sidebar-tab active" onclick="filterTab('all')" id="tab-all">All <span class="count" id="cnt-all">0</span></button>
+          <button class="sidebar-tab" onclick="filterTab('pending')" id="tab-pending">Pending <span class="count" id="cnt-pending">0</span></button>
+          <button class="sidebar-tab" onclick="filterTab('accepted')" id="tab-accepted">Accepted <span class="count" id="cnt-accepted">0</span></button>
+        </div>
+        <div class="booking-list" id="booking-list"><div class="loading">Loading…</div></div>
+      </div>
+      <div class="main">
+        <div class="calendar-section">
+          <div class="calendar-header">
+            <div class="calendar-title" id="cal-title"></div>
+            <div class="cal-nav">
+              <button class="cal-btn" onclick="changeMonth(-1)">←</button>
+              <button class="cal-btn" onclick="changeMonth(1)">→</button>
+            </div>
+          </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+        <div class="detail-panel" id="detail-panel">
+          <div class="detail-empty">
+            <div class="detail-empty-icon">📅</div>
+            <p>Click a booking or a date on the calendar to see details.</p>
+          </div>
         </div>
       </div>
-      <div class="calendar-grid" id="calendar-grid"></div>
     </div>
+  </div>
 
-    <!-- DETAIL PANEL -->
-    <div class="detail-panel" id="detail-panel">
-      <div class="detail-empty">
-        <div class="detail-empty-icon">📅</div>
-        <p>Click a booking on the left or a date on the calendar to see details.</p>
+  <!-- TRASH PAGE -->
+  <div class="page" id="page-trash">
+    <div class="page-scroll">
+      <div style="padding:1.5rem 2rem;border-bottom:1.5px solid var(--ink);background:var(--white);">
+        <div style="font-family:'Fraunces',serif;font-weight:900;font-size:1.4rem;letter-spacing:-0.03em;">Trash</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem;">Deleted bookings are kept for 90 days then permanently removed.</div>
+      </div>
+      <div id="trash-list"><div class="loading">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page" id="page-settings">
+    <div class="page-scroll">
+      <div class="settings-panel">
+        <div style="font-family:'Fraunces',serif;font-weight:900;font-size:1.6rem;letter-spacing:-0.04em;margin-bottom:1.5rem;">Settings</div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>Booking notification email</h3>
+            <p>This email receives all new booking requests.</p>
+          </div>
+          <div class="settings-body">
+            <div class="settings-row">
+              <div class="settings-field">
+                <label class="settings-label">Email address</label>
+                <input class="settings-input" id="setting-email" type="email" placeholder="your@email.com">
+              </div>
+              <button class="settings-save" onclick="saveSetting('guide_email', document.getElementById('setting-email').value)">Save</button>
+            </div>
+            <p class="settings-note">Change this to update where booking requests are sent. Takes effect immediately for new bookings.</p>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>Dashboard password</h3>
+            <p>Change the password to access this dashboard.</p>
+          </div>
+          <div class="settings-body">
+            <div class="settings-row">
+              <div class="settings-field">
+                <label class="settings-label">New password</label>
+                <input class="settings-input" id="setting-password" type="text" placeholder="new password">
+              </div>
+              <button class="settings-save" onclick="saveSetting('dashboard_password', document.getElementById('setting-password').value)">Save</button>
+            </div>
+            <p class="settings-note">⚠️ After saving, you will need to use the new password next time you open this dashboard.</p>
+          </div>
+        </div>
+
       </div>
     </div>
-
   </div>
-</div>
 
 </div>
-<!-- TOAST -->
+
 <div class="toast" id="toast"></div>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen" style="position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:9999;">
-  <div style="background:var(--white);border:1.5px solid var(--rust);border-radius:4px;padding:3rem 2.5rem;max-width:380px;width:90%;text-align:center;">
-    <div style="font-family:Fraunces,serif;font-weight:900;font-size:1.8rem;letter-spacing:-0.04em;margin-bottom:0.5rem;">goodgood<span style=color:#C4532A>copenhagen</span>.</div>
-    <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:2rem;">Admin Dashboard</div>
-    <input id="pw-input" type="password" placeholder="Enter password" style="width:100%;border:1.5px solid var(--sand-dark);border-radius:2px;padding:0.85rem 1rem;font-family:DM Sans,sans-serif;font-size:1rem;background:var(--cream);outline:none;margin-bottom:0.75rem;color:var(--ink);text-align:center;letter-spacing:0.1em;">
-    <div id="pw-error" style="display:none;color:var(--declined);font-size:0.82rem;margin-bottom:0.75rem;">Wrong password. Try again.</div>
-    <button onclick="tryLogin()" style="width:100%;background:var(--rust);color:white;border:none;padding:0.9rem;font-family:DM Sans,sans-serif;font-size:0.85rem;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;border-radius:2px;cursor:pointer;">Enter Dashboard</button>
-  </div>
-</div>
-
 <script>
-  // ── CONFIG ──
-  const SUPABASE_URL  = 'https://mzcsiqquiigetvwivnhy.supabase.co';
-  const SUPABASE_KEY  = 'sb_publishable_uwvelsnq-xwUuXEd8TMNbA_KHZKMBS-';
+  const SUPABASE_URL = 'https://mzcsiqquiigetvwivnhy.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_uwvelsnq-xwUuXEd8TMNbA_KHZKMBS-';
+  const DEFAULT_PW   = 'phuket';
 
-  const TOUR_LABELS = { food: '🍽️ Food Tour', walking: '🚶 Walking Tour', bike: '🚲 Bike Tour' };
-  const SLOT_LABELS = { morning: 'Morning — 9:30 am to 1:00 pm', afternoon: 'Afternoon — 2:30 pm to 6:00 pm' };
+  const TOUR_LABELS = { food:'🍽️ Food Tour', walking:'🚶 Walking Tour', bike:'🚲 Bike Tour' };
+  const SLOT_LABELS = { morning:'Morning — 9:30 am to 1:00 pm', afternoon:'Afternoon — 2:30 pm to 6:00 pm' };
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-  let allBookings = [];
-  let currentFilter = 'all';
-  let currentMonth = new Date().getMonth();
-  let currentYear  = new Date().getFullYear();
-  let selectedBookingId = null;
-  let selectedDate = null;
+  let allBookings = [], trashedBookings = [], settings = {};
+  let currentFilter = 'all', currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear();
+  let selectedBookingId = null, selectedDate = null;
 
-  // ── FETCH ──
-  async function fetchBookings() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?select=*&order=tour_date.asc,created_at.desc`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    });
-    allBookings = await res.json();
-    updateStats();
-    renderList();
-    renderCalendar();
+  // AUTH
+  async function getPassword() {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?key=eq.dashboard_password&select=value`, { headers: headers() });
+      const data = await res.json();
+      return data.length > 0 ? data[0].value : DEFAULT_PW;
+    } catch(e) { return DEFAULT_PW; }
+  }
+  async function tryLogin() {
+    const input = document.getElementById('pw-input').value;
+    const pw = await getPassword();
+    if (input === pw) {
+      sessionStorage.setItem('ggc_auth', 'true');
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      init();
+    } else {
+      const err = document.getElementById('pw-error');
+      err.style.display = 'block';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+      setTimeout(() => err.style.display = 'none', 3000);
+    }
+  }
+  document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+  async function checkAuth() {
+    if (sessionStorage.getItem('ggc_auth') === 'true') {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      init();
+    }
   }
 
-  // ── STATS ──
+  // HELPERS
+  function headers(extra) { return { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, ...extra }; }
+  function jsonHeaders() { return headers({ 'Content-Type': 'application/json', 'Prefer': 'return=representation' }); }
+
+  // INIT
+  async function init() { await fetchAll(); setInterval(fetchAll, 30000); }
+
+  async function fetchAll() {
+    const [b, t, s] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/bookings?select=*&deleted_at=is.null&order=tour_date.asc,created_at.desc`, { headers: headers() }).then(r => r.json()),
+      fetch(`${SUPABASE_URL}/rest/v1/bookings?select=*&deleted_at=not.is.null&order=deleted_at.desc`, { headers: headers() }).then(r => r.json()),
+      fetch(`${SUPABASE_URL}/rest/v1/settings?select=*`, { headers: headers() }).then(r => r.json()),
+    ]);
+    allBookings = Array.isArray(b) ? b : [];
+    trashedBookings = Array.isArray(t) ? t : [];
+    s.forEach(x => settings[x.key] = x.value);
+    updateStats(); renderList(); renderCalendar();
+    const tb = document.getElementById('trash-badge');
+    if (trashedBookings.length > 0) { tb.style.display='inline-flex'; tb.textContent=trashedBookings.length; } else { tb.style.display='none'; }
+  }
+
+  // PAGES
+  function showPage(page, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-'+page).classList.add('active');
+    el.classList.add('active');
+    if (page === 'trash') renderTrash();
+    if (page === 'settings') loadSettings();
+  }
+
+  // STATS
   function updateStats() {
-    const pending  = allBookings.filter(b => b.status === 'pending').length;
-    const accepted = allBookings.filter(b => b.status === 'accepted').length;
-    document.getElementById('stat-pending').textContent  = pending;
+    const pending = allBookings.filter(b => b.status==='pending').length;
+    const accepted = allBookings.filter(b => b.status==='accepted').length;
+    document.getElementById('stat-pending').textContent = pending;
     document.getElementById('stat-accepted').textContent = accepted;
-    document.getElementById('stat-total').textContent    = allBookings.length;
-    document.getElementById('cnt-all').textContent      = allBookings.length;
-    document.getElementById('cnt-pending').textContent  = pending;
+    document.getElementById('stat-total').textContent = allBookings.length;
+    document.getElementById('cnt-all').textContent = allBookings.length;
+    document.getElementById('cnt-pending').textContent = pending;
     document.getElementById('cnt-accepted').textContent = accepted;
   }
 
-  // ── LIST ──
+  // LIST
   function filterTab(f) {
     currentFilter = f;
-    ['all','pending','accepted'].forEach(t => {
-      document.getElementById('tab-'+t).classList.toggle('active', t === f);
-    });
+    ['all','pending','accepted'].forEach(t => document.getElementById('tab-'+t).classList.toggle('active', t===f));
     renderList();
   }
-
   function renderList() {
-    const filtered = currentFilter === 'all'
-      ? allBookings
-      : allBookings.filter(b => b.status === currentFilter);
-
+    const filtered = currentFilter==='all' ? allBookings : allBookings.filter(b => b.status===currentFilter);
     const list = document.getElementById('booking-list');
-    if (filtered.length === 0) {
-      list.innerHTML = `<div class="empty-state">No ${currentFilter === 'all' ? '' : currentFilter} bookings yet.</div>`;
-      return;
-    }
-
+    if (!filtered.length) { list.innerHTML = `<div class="empty-state">No ${currentFilter==='all'?'':currentFilter} bookings.</div>`; return; }
     list.innerHTML = filtered.map(b => {
-      const date = new Date(b.tour_date).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
-      const slot = b.slot === 'morning' ? '🌅 Morning' : '🌇 Afternoon';
-      return `
-        <div class="booking-item ${selectedBookingId === b.id ? 'selected' : ''}" onclick="selectBooking('${b.id}')">
-          <div class="booking-item-top">
-            <div class="booking-name">${b.first_name} ${b.last_name}</div>
-            <span class="status-badge status-${b.status}">${b.status}</span>
-          </div>
-          <div class="booking-item-meta">${date} · ${slot} · ${b.group_size} pax</div>
-          <div class="booking-item-tour">${TOUR_LABELS[b.tour_type] || b.tour_type}</div>
-        </div>`;
+      const date = new Date(b.tour_date+'T00:00:00').toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+      const slot = b.slot==='morning' ? '🌅 Morning' : '🌇 Afternoon';
+      return `<div class="booking-item ${selectedBookingId===b.id?'selected':''}" onclick="selectBooking('${b.id}')">
+        <div class="booking-item-top">
+          <div><div class="booking-name">${b.first_name} ${b.last_name}</div><div class="booking-num">#${b.booking_number||'–'}</div></div>
+          <span class="status-badge status-${b.status}">${b.status}</span>
+        </div>
+        <div class="booking-item-meta">${date} · ${slot} · ${b.group_size} pax</div>
+        <div class="booking-item-tour">${TOUR_LABELS[b.tour_type]||b.tour_type}</div>
+      </div>`;
     }).join('');
   }
 
-  // ── SELECT BOOKING ──
   function selectBooking(id) {
-    selectedBookingId = id;
-    selectedDate = null;
+    selectedBookingId = id; selectedDate = null;
     renderList();
-    const b = allBookings.find(x => x.id === id);
+    const b = allBookings.find(x => x.id===id);
     if (b) renderDetail(b);
   }
 
-  // ── DETAIL ──
+  // DETAIL
   function renderDetail(b) {
-    const dateStr = new Date(b.tour_date).toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    const createdStr = new Date(b.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-
+    const dateStr = new Date(b.tour_date+'T00:00:00').toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    const created = new Date(b.created_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) + ' ' + new Date(b.created_at).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
     let actions = '';
-    if (b.status === 'pending') {
-      actions = `
-        <button class="action-btn btn-accept" onclick="updateStatus('${b.id}','accepted')">✓ Accept</button>
-        <button class="action-btn btn-decline" onclick="updateStatus('${b.id}','declined')">✗ Decline</button>`;
-    } else if (b.status === 'accepted') {
-      actions = `
-        <button class="action-btn btn-cancel" onclick="updateStatus('${b.id}','declined')">Cancel booking</button>`;
-    } else {
-      actions = `
-        <button class="action-btn btn-accept" onclick="updateStatus('${b.id}','accepted')">↩ Restore</button>`;
-    }
-    actions += `<button class="action-btn btn-delete" onclick="deleteBooking('${b.id}')">🗑 Delete</button>`;
+    if (b.status==='pending') actions = `<button class="action-btn btn-accept" onclick="updateStatus('${b.id}','accepted')">✓ Accept</button><button class="action-btn btn-decline" onclick="updateStatus('${b.id}','declined')">✗ Decline</button>`;
+    else if (b.status==='accepted') actions = `<button class="action-btn btn-cancel" onclick="updateStatus('${b.id}','declined')">Cancel booking</button>`;
+    else actions = `<button class="action-btn btn-accept" onclick="updateStatus('${b.id}','accepted')">↩ Restore</button>`;
+    actions += `<button class="action-btn btn-trash" onclick="moveToTrash('${b.id}')">🗑 Move to trash</button>`;
 
     document.getElementById('detail-panel').innerHTML = `
       <div class="detail-card">
         <div class="detail-card-header">
           <h2>${b.first_name} ${b.last_name}</h2>
-          <span class="status-badge status-${b.status}">${b.status}</span>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <div class="detail-card-num">Booking #${b.booking_number||'–'}</div>
+            <span class="status-badge status-${b.status}">${b.status}</span>
+          </div>
         </div>
         <div class="detail-body">
-          <div class="detail-row"><div class="detail-label">Tour</div><div class="detail-value">${TOUR_LABELS[b.tour_type] || b.tour_type}</div></div>
+          <div class="detail-row"><div class="detail-label">Tour</div><div class="detail-value">${TOUR_LABELS[b.tour_type]||b.tour_type}</div></div>
           <div class="detail-row"><div class="detail-label">Date</div><div class="detail-value">${dateStr}</div></div>
           <div class="detail-row"><div class="detail-label">Time slot</div><div class="detail-value">${SLOT_LABELS[b.slot]}</div></div>
-          <div class="detail-row"><div class="detail-label">Group size</div><div class="detail-value">${b.group_size} ${b.group_size === 1 ? 'person' : 'people'}</div></div>
+          <div class="detail-row"><div class="detail-label">Group size</div><div class="detail-value">${b.group_size} ${b.group_size===1?'person':'people'}</div></div>
           <div class="detail-row"><div class="detail-label">Email</div><div class="detail-value"><a href="mailto:${b.email}" style="color:var(--rust);">${b.email}</a></div></div>
-          ${b.notes ? `<div class="detail-row"><div class="detail-label">Notes</div><div class="detail-value detail-notes">${b.notes}</div></div>` : ''}
-          <div class="detail-row"><div class="detail-label">Requested</div><div class="detail-value" style="font-weight:300;font-size:0.82rem;color:var(--muted);">${createdStr}</div></div>
+          ${b.notes?`<div class="detail-row"><div class="detail-label">Notes</div><div class="detail-value detail-notes">${b.notes}</div></div>`:''}
+          <div class="detail-row"><div class="detail-label">Requested</div><div class="detail-value" style="font-weight:300;font-size:0.8rem;color:var(--muted);">${created}</div></div>
         </div>
         <div class="detail-actions">${actions}</div>
       </div>`;
   }
 
-  // ── UPDATE STATUS ──
-  async function updateStatus(id, newStatus) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({ status: newStatus })
-    });
-    if (res.ok) {
-      showToast(`Booking ${newStatus}!`);
-      await fetchBookings();
-      const b = allBookings.find(x => x.id === id);
-      if (b) renderDetail(b);
-    } else {
-      showToast('Something went wrong. Try again.');
-    }
+  async function updateStatus(id, status) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, { method:'PATCH', headers:jsonHeaders(), body:JSON.stringify({status}) });
+    if (res.ok) { showToast(`Booking ${status}!`); await fetchAll(); const b=allBookings.find(x=>x.id===id); if(b) renderDetail(b); }
+    else showToast('Something went wrong.');
   }
 
-  // ── DELETE ──
-  async function deleteBooking(id) {
-    if (!confirm('Delete this booking permanently?')) return;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, {
-      method: 'DELETE',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    });
+  async function moveToTrash(id) {
+    if (!confirm('Move to trash? It will be kept for 90 days.')) return;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, { method:'PATCH', headers:jsonHeaders(), body:JSON.stringify({deleted_at: new Date().toISOString()}) });
     if (res.ok) {
-      showToast('Booking deleted.');
+      showToast('Moved to trash.');
       selectedBookingId = null;
       document.getElementById('detail-panel').innerHTML = `<div class="detail-empty"><div class="detail-empty-icon">📅</div><p>Select a booking to view details.</p></div>`;
-      await fetchBookings();
-    }
+      await fetchAll();
+    } else showToast('Something went wrong.');
   }
 
-  // ── CALENDAR ──
-  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  // TRASH
+  function renderTrash() {
+    const list = document.getElementById('trash-list');
+    if (!trashedBookings.length) { list.innerHTML = `<div class="empty-state" style="padding:4rem 0;">🗑 Trash is empty</div>`; return; }
+    list.innerHTML = trashedBookings.map(b => {
+      const date = new Date(b.tour_date+'T00:00:00').toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      const daysLeft = 90 - Math.floor((Date.now() - new Date(b.deleted_at)) / 86400000);
+      const daysColor = daysLeft < 10 ? 'color:var(--declined)' : 'color:var(--muted)';
+      return `<div class="trash-item">
+        <div class="trash-info">
+          <div class="trash-name">${b.first_name} ${b.last_name} <span style="font-size:0.75rem;color:var(--muted);font-weight:400;">#${b.booking_number||'–'}</span></div>
+          <div class="trash-meta">${date} · ${b.slot==='morning'?'Morning':'Afternoon'} · ${TOUR_LABELS[b.tour_type]||b.tour_type}<br>${b.email}</div>
+        </div>
+        <div class="trash-days" style="${daysColor}">${daysLeft} days left</div>
+        <div class="trash-actions">
+          <button class="trash-btn" onclick="restoreBooking('${b.id}')" style="background:var(--green);color:white;">Restore</button>
+          <button class="trash-btn" onclick="deletePermanently('${b.id}')" style="background:var(--declined);color:white;">Delete forever</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
+  async function restoreBooking(id) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, { method:'PATCH', headers:jsonHeaders(), body:JSON.stringify({deleted_at:null}) });
+    if (res.ok) { showToast('Booking restored!'); await fetchAll(); renderTrash(); }
+    else showToast('Something went wrong.');
+  }
+
+  async function deletePermanently(id) {
+    if (!confirm('Permanently delete? This cannot be undone.')) return;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, { method:'DELETE', headers:headers() });
+    if (res.ok) { showToast('Permanently deleted.'); await fetchAll(); renderTrash(); }
+    else showToast('Something went wrong.');
+  }
+
+  // SETTINGS
+  function loadSettings() {
+    if (settings['guide_email']) document.getElementById('setting-email').value = settings['guide_email'];
+  }
+
+  async function saveSetting(key, value) {
+    if (!value.trim()) { showToast('Please enter a value.'); return; }
+    const exists = settings[key] !== undefined;
+    const url = exists ? `${SUPABASE_URL}/rest/v1/settings?key=eq.${key}` : `${SUPABASE_URL}/rest/v1/settings`;
+    const body = exists ? { value } : { key, value };
+    const res = await fetch(url, { method: exists?'PATCH':'POST', headers:jsonHeaders(), body:JSON.stringify(body) });
+    if (res.ok) {
+      settings[key] = value;
+      showToast('✓ Saved!');
+      if (key==='dashboard_password') document.getElementById('setting-password').value = '';
+    } else showToast('Something went wrong.');
+  }
+
+  // CALENDAR
   function changeMonth(d) {
     currentMonth += d;
-    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-    if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+    if (currentMonth > 11) { currentMonth=0; currentYear++; }
+    if (currentMonth < 0)  { currentMonth=11; currentYear--; }
     renderCalendar();
   }
-
   function renderCalendar() {
     document.getElementById('cal-title').textContent = `${MONTHS[currentMonth]} ${currentYear}`;
     const grid = document.getElementById('calendar-grid');
-
     const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay  = new Date(currentYear, currentMonth + 1, 0);
+    const lastDay  = new Date(currentYear, currentMonth+1, 0);
     const today    = new Date();
-
-    // day labels
     let html = DAYS.map(d => `<div class="cal-day-label">${d}</div>`).join('');
-
-    // offset (Mon=0)
-    let offset = firstDay.getDay() - 1;
-    if (offset < 0) offset = 6;
-
-    // prev month days
-    for (let i = offset - 1; i >= 0; i--) {
-      const d = new Date(currentYear, currentMonth, -i);
-      html += `<div class="cal-day other-month"><div class="cal-day-num">${d.getDate()}</div></div>`;
-    }
-
-    // current month
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-      const dateStr  = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      const dayBookings = allBookings.filter(b => b.tour_date === dateStr);
-      const isToday  = today.getDate()===day && today.getMonth()===currentMonth && today.getFullYear()===currentYear;
-      const isSelected = selectedDate === dateStr;
-
-      const dots = dayBookings.map(b => `<div class="cal-dot ${b.status}"></div>`).join('');
-
-      html += `<div class="cal-day ${isToday?'today':''} ${isSelected?'selected':''}" onclick="selectDate('${dateStr}')">
+    let offset = firstDay.getDay()-1; if (offset<0) offset=6;
+    for (let i=offset-1; i>=0; i--) { const d=new Date(currentYear,currentMonth,-i); html+=`<div class="cal-day other-month"><div class="cal-day-num">${d.getDate()}</div></div>`; }
+    for (let day=1; day<=lastDay.getDate(); day++) {
+      const ds = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const db = allBookings.filter(b => b.tour_date===ds);
+      const isToday = today.getDate()===day && today.getMonth()===currentMonth && today.getFullYear()===currentYear;
+      const dots = db.map(b => `<div class="cal-dot ${b.status}"></div>`).join('');
+      html += `<div class="cal-day ${isToday?'today':''} ${selectedDate===ds?'selected':''}" onclick="selectDate('${ds}')">
         <div class="cal-day-num">${day}</div>
-        ${dots ? `<div class="cal-dots">${dots}</div>` : ''}
+        ${dots?`<div class="cal-dots">${dots}</div>`:''}
       </div>`;
     }
-
-    // next month padding
-    const totalCells = offset + lastDay.getDate();
-    const remaining  = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-    for (let i = 1; i <= remaining; i++) {
-      html += `<div class="cal-day other-month"><div class="cal-day-num">${i}</div></div>`;
-    }
-
+    const rem = (offset+lastDay.getDate())%7; if (rem) for (let i=1; i<=7-rem; i++) html+=`<div class="cal-day other-month"><div class="cal-day-num">${i}</div></div>`;
     grid.innerHTML = html;
   }
 
-  // ── SELECT DATE ──
-  function selectDate(dateStr) {
-    selectedDate = dateStr;
-    selectedBookingId = null;
-    renderCalendar();
-    renderList();
-
-    const dayBookings = allBookings.filter(b => b.tour_date === dateStr);
-    const dateLabel = new Date(dateStr).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-
-    const morningBooking   = dayBookings.find(b => b.slot === 'morning');
-    const afternoonBooking = dayBookings.find(b => b.slot === 'afternoon');
-
-    function slotHTML(booking, time) {
-      if (!booking) return `<div class="day-slot"><div class="slot-time">${time}</div><div class="slot-free">Available</div></div>`;
-      return `<div class="day-slot" onclick="selectBooking('${booking.id}')" style="cursor:pointer;">
+  function selectDate(ds) {
+    selectedDate = ds; selectedBookingId = null; renderCalendar();
+    const db = allBookings.filter(b => b.tour_date===ds);
+    const label = new Date(ds+'T00:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const m = db.find(b => b.slot==='morning'), a = db.find(b => b.slot==='afternoon');
+    function slotHTML(bk, time) {
+      if (!bk) return `<div class="day-slot"><div class="slot-time">${time}</div><div class="slot-free">Available</div></div>`;
+      return `<div class="day-slot" onclick="selectBooking('${bk.id}')" style="cursor:pointer;">
         <div class="slot-time">${time}</div>
-        <div class="slot-info">
-          <div class="slot-name">${booking.first_name} ${booking.last_name} · ${booking.group_size} pax</div>
-          <div class="slot-tour">${TOUR_LABELS[booking.tour_type] || booking.tour_type}</div>
-        </div>
-        <span class="status-badge status-${booking.status}">${booking.status}</span>
+        <div style="flex:1;"><div class="slot-name">${bk.first_name} ${bk.last_name} · ${bk.group_size} pax <span style="font-size:0.7rem;color:var(--muted);">#${bk.booking_number||'–'}</span></div><div class="slot-tour">${TOUR_LABELS[bk.tour_type]||bk.tour_type}</div></div>
+        <span class="status-badge status-${bk.status}">${bk.status}</span>
       </div>`;
     }
-
     document.getElementById('detail-panel').innerHTML = `
-      <div class="day-panel">
-        <div class="day-panel-header">${dateLabel}</div>
-        ${slotHTML(morningBooking, 'Morning')}
-        ${slotHTML(afternoonBooking, 'Afternoon')}
-      </div>
-      <div class="detail-empty" style="height:auto;padding:2rem 0;">
-        <p>Click a slot above to manage the booking.</p>
-      </div>`;
+      <div class="day-panel"><div class="day-panel-header">${label}</div>${slotHTML(m,'Morning')}${slotHTML(a,'Afternoon')}</div>
+      <div class="detail-empty" style="height:auto;padding:1.5rem 0;"><p style="font-size:0.82rem;">Click a slot to manage the booking.</p></div>`;
   }
 
-  // ── TOAST ──
+  // TOAST
   function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
-
-  // ── INIT ──
-  fetchBookings();
-  setInterval(fetchBookings, 30000); // auto-refresh every 30s
-  // ── PASSWORD PROTECTION ──
-  const PASSWORD = "phuket";
-  const SESSION_KEY = "ggc_admin_auth";
-
-  function checkAuth() {
-    if (sessionStorage.getItem(SESSION_KEY) === "true") {
-      document.getElementById("auth-screen").style.display = "none";
-      document.getElementById("app").style.display = "flex";
-      fetchBookings();
-      setInterval(fetchBookings, 30000);
-    }
-  }
-
-  function tryLogin() {
-    const input = document.getElementById("pw-input").value;
-    if (input === PASSWORD) {
-      sessionStorage.setItem(SESSION_KEY, "true");
-      document.getElementById("auth-screen").style.display = "none";
-      document.getElementById("app").style.display = "flex";
-      fetchBookings();
-      setInterval(fetchBookings, 30000);
-    } else {
-      const err = document.getElementById("pw-error");
-      err.style.display = "block";
-      document.getElementById("pw-input").value = "";
-      document.getElementById("pw-input").focus();
-      setTimeout(() => err.style.display = "none", 3000);
-    }
-  }
-
-  document.getElementById("pw-input").addEventListener("keydown", e => {
-    if (e.key === "Enter") tryLogin();
-  });
 
   checkAuth();
 </script>
