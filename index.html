@@ -1307,7 +1307,7 @@
                   <div class="guide-review-card">
                     <div class="guide-review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
                     <div class="guide-review-text">"${r.text}"</div>
-                    <div class="guide-review-meta">${r.reviewer} · ${new Date(r.reviewed_at).toLocaleDateString('en-GB',{month:'short',year:'numeric'})}<span class="guide-review-source">${r.source}</span></div>
+                    <div class="guide-review-meta">${r.reviewer} · ${new Date(r.reviewed_at).toLocaleDateString('en-GB',{month:'short',year:'numeric'})} · ${r.source_url?`<a href="${r.source_url}" target="_blank" style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--rust);text-decoration:none;border:1px solid var(--rust);padding:0.1rem 0.4rem;border-radius:2px;">${r.source}</a>`:`<span class="guide-review-source">${r.source}</span>`}</div>
                   </div>`).join('') : '';
                 return `
                 <div class="guide-slide">
