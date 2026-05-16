@@ -649,7 +649,7 @@ function renderGuides() {
       <div class="content-card-info">
         <div class="content-card-title">${g.name}</div>
         <div class="content-card-meta">${g.languages} · ${g.active?'<span style="color:var(--green);">Active</span>':'<span style="color:var(--muted);">Hidden</span>'}</div>
-        <div class="content-card-meta" style="margin-top:0.2rem;">${g.bio.substring(0,80)}...</div>
+        <div class="content-card-meta" style="margin-top:0.2rem;font-style:italic;">${g.bio.substring(0,80)}...</div>
       </div>
       <div style="display:flex;gap:0.4rem;flex-shrink:0;">
         <button class="cbtn cbtn-save" onclick="openGuideForm('${g.id}')" style="padding:0.4rem 0.7rem;font-size:0.7rem;">Edit</button>
@@ -674,10 +674,7 @@ function openGuideForm(id) {
         <div class="cform-row"><label>Full name</label><input id="gf-name" value="${g?g.name:''}"></div>
         <div class="cform-row"><label>Bio</label><textarea id="gf-bio" style="min-height:120px;">${g?g.bio:''}</textarea></div>
         <div class="cform-row"><label>Languages spoken</label><input id="gf-lang" value="${g?g.languages:''}" placeholder="e.g. Danish, English, French, Arabic"></div>
-        <div class="cform-2col">
-          <div class="cform-row"><label>Instagram (optional)</label><input id="gf-ig" value="${g&&g.instagram?g.instagram:''}" placeholder="@username"></div>
-          <div class="cform-row"><label>Facebook (optional)</label><input id="gf-fb" value="${g&&g.facebook?g.facebook:''}" placeholder="facebook.com/..."></div>
-        </div>
+
         <div class="cform-row"><label>Visible on website</label>
           <select id="gf-active"><option value="true" ${(!g||g.active)?'selected':''}>Yes — Active</option><option value="false" ${(g&&!g.active)?'selected':''}>No — Hidden</option></select>
         </div>
@@ -701,8 +698,7 @@ async function saveGuide(id) {
     name: document.getElementById('gf-name').value,
     bio:  document.getElementById('gf-bio').value,
     languages: document.getElementById('gf-lang').value,
-    instagram: document.getElementById('gf-ig').value || null,
-    facebook:  document.getElementById('gf-fb').value || null,
+
     active: document.getElementById('gf-active').value === 'true',
     photo_url,
   };
