@@ -982,7 +982,7 @@ function renderReviews() {
         <div style="flex:1;">
           <div style="color:var(--rust);font-size:0.9rem;margin-bottom:0.3rem;">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
           <div style="font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:0.95rem;line-height:1.6;margin-bottom:0.4rem;">"${r.text}"</div>
-          <div style="font-size:0.72rem;color:var(--muted);">${r.reviewer} · ${r.reviewed_at} · <span style="color:var(--rust);font-weight:600;">${r.source}</span> · ${r.active?'<span style="color:var(--green);">Visible</span>':'<span style="color:var(--muted);">Hidden</span>'}</div>
+          <div style="font-size:0.72rem;color:var(--muted);">${r.reviewer} · ${r.reviewed_at} · ${r.source_url?`<a href="${r.source_url}" target="_blank" style="color:var(--rust);font-weight:600;">${r.source}</a>`:`<span style="color:var(--rust);font-weight:600;">${r.source}</span>`} · ${r.active?'<span style="color:var(--green);">Visible</span>':'<span style="color:var(--muted);">Hidden</span>'}</div>
         </div>
         <div style="display:flex;gap:0.4rem;flex-shrink:0;">
           <button class="cbtn cbtn-save" onclick="openReviewForm('${r.id}')" style="padding:0.3rem 0.6rem;font-size:0.68rem;">Edit</button>
@@ -1010,7 +1010,8 @@ function openReviewForm(id) {
           </div>
           <div class="cform-row"><label>Date</label><input id="rf-date" type="date" value="${r?r.reviewed_at:new Date().toISOString().split('T')[0]}"></div>
         </div>
-        <div class="cform-row"><label>Source (where the review is from)</label><input id="rf-source" value="${r?r.source:''}" placeholder="e.g. Google, TripAdvisor, Airbnb, Viator"></div>
+        <div class="cform-row"><label>Source name</label><input id="rf-source" value="${r?r.source:''}" placeholder="e.g. Google, TripAdvisor, Airbnb, Viator"></div>
+        <div class="cform-row"><label>Source URL (optional — paste the link to the review)</label><input id="rf-source-url" value="${r&&r.source_url?r.source_url:''}" placeholder="https://tripadvisor.com/..."></div>
         <div class="cform-row"><label>Visible on website</label>
           <select id="rf-active"><option value="true" ${(!r||r.active)?'selected':''}>Yes</option><option value="false" ${r&&!r.active?'selected':''}>No</option></select>
         </div>
@@ -1031,6 +1032,7 @@ async function saveReview(id) {
     stars:    parseInt(document.getElementById('rf-stars').value),
     reviewed_at: document.getElementById('rf-date').value,
     source:   document.getElementById('rf-source').value,
+    source_url: document.getElementById('rf-source-url').value || null,
     active:   document.getElementById('rf-active').value === 'true',
   };
   let r;
