@@ -1315,12 +1315,21 @@
             <div class="guide-slider" id="guide-slider">
               ${guides.map((g,i) => {
                 const gReviews = allReviews.filter(r => r.guide_id === g.id);
-                const reviewsHTML = gReviews.length ? gReviews.slice(0,3).map(r => `
-                  <div class="guide-review-card">
-                    <div class="guide-review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
-                    <div class="guide-review-text">"${r.text}"</div>
-                    <div class="guide-review-meta">${r.reviewer} · ${new Date(r.reviewed_at).toLocaleDateString('en-GB',{month:'short',year:'numeric'})} · ${r.source_url?`<a href="${r.source_url}" target="_blank" style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--rust);text-decoration:none;border:1px solid var(--rust);padding:0.1rem 0.4rem;border-radius:2px;">${r.source}</a>`:`<span class="guide-review-source">${r.source}</span>`}</div>
-                  </div>`).join('') : '';
+                const reviewsHTML = gReviews.length ? `
+                  <div style="margin-top:3rem;border-top:1.5px solid var(--sand);padding-top:2.5rem;">
+                    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);margin-bottom:2rem;">What guests say</div>
+                    ${gReviews.slice(0,5).map(r => `
+                      <div style="padding-bottom:2rem;margin-bottom:2rem;border-bottom:1px solid var(--sand);">
+                        <div style="color:var(--rust);font-size:1rem;letter-spacing:0.1em;margin-bottom:0.9rem;">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+                        <blockquote style="font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:clamp(1rem,2vw,1.2rem);line-height:1.7;color:var(--ink);margin:0 0 1rem 0;">"${r.text}"</blockquote>
+                        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+                          <span style="font-size:0.82rem;font-weight:500;color:var(--ink);">${r.reviewer}</span>
+                          <span style="color:var(--sand-dark);">·</span>
+                          <span style="font-size:0.78rem;color:var(--muted);">${new Date(r.reviewed_at).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</span>
+                          ${r.source_url ? `<a href="${r.source_url}" target="_blank" rel="noopener" style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--rust);text-decoration:none;border:1px solid var(--rust);padding:0.15rem 0.5rem;border-radius:2px;">${r.source} ↗</a>` : `<span style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--rust);border:1px solid var(--rust);padding:0.15rem 0.5rem;border-radius:2px;">${r.source}</span>`}
+                        </div>
+                      </div>`).join('')}
+                  </div>` : '';
                 return `
                 <div class="guide-slide">
                   <div style="position:relative;">
@@ -1339,8 +1348,9 @@
                       <li>Speaks: ${g.languages}</li>
                     </ul>
                     <a href="#book" class="btn-primary">Book a tour with ${g.name.split(' ')[0]}</a>
-                    ${reviewsHTML ? `<div class="guide-reviews"><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.75rem;">What people say</div>${reviewsHTML}</div>` : ''}
                   </div>
+                </div>
+                ${reviewsHTML}
                 </div>`;
               }).join('')}
             </div>
