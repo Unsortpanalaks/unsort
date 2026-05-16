@@ -868,7 +868,7 @@
 </nav>
 
 <!-- HERO -->
-<section class="hero">
+<section class="hero" id="hero-section">
   <div class="hero-left">
     <div class="hero-tag">Copenhagen — Only Copenhagen</div>
     <h1>Not a<br>tour.<br>A <em>city<br>revealed.</em></h1>
@@ -1251,6 +1251,32 @@
 
   // ── Dynamic content loading ──
   async function loadSiteContent() {
+    // Load hero photo
+    try {
+      const sr = await fetch(`${SUPABASE_URL}/rest/v1/settings?key=eq.hero_photo&select=value`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+      });
+      const sd = await sr.json();
+      if (sd.length && sd[0].value) {
+        const hero = document.getElementById('hero-section');
+        if (hero) {
+          hero.style.backgroundImage = `url('${sd[0].value}')`;
+          hero.style.backgroundSize = 'cover';
+          hero.style.backgroundPosition = 'center';
+          hero.style.position = 'relative';
+          // Add dark overlay so text stays readable
+          if (!document.getElementById('hero-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.id = 'hero-overlay';
+            overlay.style.cssText = 'position:absolute;inset:0;background:rgba(245,240,232,0.75);z-index:0;pointer-events:none;';
+            hero.insertBefore(overlay, hero.firstChild);
+            // Make hero children sit above overlay
+            hero.querySelectorAll('.hero-left,.hero-right').forEach(el => el.style.position = 'relative');
+          }
+        }
+      }
+    } catch(e) {}
+
     // Load tours
     try {
       const tr = await fetch(`${SUPABASE_URL}/rest/v1/tours?select=*&active=eq.true&order=sort_order`, {
