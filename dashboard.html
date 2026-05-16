@@ -341,6 +341,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 
       <div class="scard">
         <div class="scard-head">
+          <h3>Hero photo</h3>
+          <p>The background photo on the top section of the homepage.</p>
+        </div>
+        <div class="scard-body">
+          <div id="hero-preview-wrap" style="margin-bottom:0.75rem;">
+            <div style="width:100%;height:100px;background:var(--sand);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.82rem;">No photo yet — upload one below</div>
+          </div>
+          <input type="file" accept="image/*" onchange="uploadHeroPhoto(this)" style="font-size:0.82rem;">
+          <p class="snote">Recommended: wide landscape photo, at least 1400px wide.</p>
+        </div>
+      </div>
+
+      <div class="scard">
+        <div class="scard-head">
           <h3>Dashboard password</h3>
           <p>Change the password to access this dashboard.</p>
         </div>
@@ -1102,6 +1116,46 @@ async function deleteTourPhoto(photoId, tourId) {
   await fetch(`${SURL}/rest/v1/tour_photos?id=eq.${photoId}`, {method:'DELETE', headers:hdrs()});
   showToast('Photo deleted.');
   loadTourPhotos(tourId);
+}
+
+async function uploadHeroPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  showToast('Uploading photo...');
+  const ext = file.name.split('.').pop();
+  const path = 'hero/' + Date.now() + '.' + ext;
+  const r = await fetch(`${SURL}/storage/v1/object/photos/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SKEY, 'Authorization': 'Bearer ' + SKEY, 'Content-Type': file.type },
+    body: file
+  });
+  if (!r.ok) { showToast('Upload failed.'); return; }
+  const url = `${SURL}/storage/v1/object/public/photos/${path}`;
+  await saveSetting('hero_photo', url);
+  // Update preview
+  const prev = document.getElementById('hero-preview');
+  if (prev) { prev.src = url; prev.style.display = 'block'; prev.tagName === 'DIV' && (prev.outerHTML = `<img src="${url}" id="hero-preview" style="width:100%;max-height:180px;object-fit:cover;border-radius:4px;border:1.5px solid var(--sand);margin-bottom:0.75rem;display:block;">`); }
+  showToast('✓ Hero photo updated!');
+}
+
+async function uploadHeroPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  showToast('Uploading photo...');
+  const ext = file.name.split('.').pop();
+  const path = 'hero/' + Date.now() + '.' + ext;
+  const r = await fetch(`${SURL}/storage/v1/object/photos/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SKEY, 'Authorization': 'Bearer ' + SKEY, 'Content-Type': file.type },
+    body: file
+  });
+  if (!r.ok) { showToast('Upload failed.'); return; }
+  const url = `${SURL}/storage/v1/object/public/photos/${path}`;
+  await saveSetting('hero_photo', url);
+  cfg['hero_photo'] = url;
+  document.getElementById('hero-preview-wrap').innerHTML = `<img src="${url}" style="width:100%;max-height:180px;object-fit:cover;border-radius:4px;border:1.5px solid var(--sand);">`;
+  showToast('✓ Hero photo updated!');
+  input.value = '';
 }
 
 checkAuth();
