@@ -833,6 +833,8 @@
   }
 
   /* Responsive simplified */
+  .guide-modal-grid { grid-template-columns: 1fr 2fr !important; }
+  @media (max-width: 600px) { .guide-modal-grid { grid-template-columns: 1fr !important; } }
   .guide-grid-row { grid-template-columns: 1fr !important; gap: 2rem !important; }
   @media (max-width: 700px) { .guide-slide-inner { grid-template-columns: 1fr !important; gap: 2rem !important; } }
   @media (max-width: 900px) {
@@ -1149,6 +1151,14 @@
 
 <a href="#book" class="float-cta">Book a tour</a>
 
+<!-- GUIDE PROFILE MODAL -->
+<div id="guide-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(26,23,20,0.88);overflow-y:auto;padding:2rem 1rem;" onclick="if(event.target===this){this.style.display='none';document.body.style.overflow='';}">
+  <div style="background:var(--white);max-width:800px;margin:0 auto;border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;position:relative;">
+    <button onclick="document.getElementById('guide-modal').style.display='none';document.body.style.overflow='';" style="position:absolute;top:1rem;right:1rem;background:var(--ink);color:var(--cream);border:none;width:32px;height:32px;border-radius:50%;font-size:1rem;cursor:pointer;z-index:10;">✕</button>
+    <div id="guide-modal-content"></div>
+  </div>
+</div>
+
 <!-- TOUR DETAIL MODAL -->
 <div id="tour-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(26,23,20,0.88);overflow-y:auto;padding:2rem 1rem;" onclick="closeTourModal(event)">
   <div id="tour-modal-inner" style="background:var(--white);max-width:760px;margin:0 auto;border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;position:relative;">
@@ -1279,48 +1289,45 @@
       });
       const guides = await gr.json();
       window._guides = Array.isArray(guides) ? guides : [];
-
-      // Fetch reviews for all guides
-      let allReviews = [];
-      try {
-        const rv = await fetch(`${SUPABASE_URL}/rest/v1/reviews?select=*&active=eq.true&order=reviewed_at.desc`, {
-          headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
-        });
-        const rvData = await rv.json();
-        allReviews = Array.isArray(rvData) ? rvData : [];
-      } catch(e) {}
-
       const sec = document.getElementById('guides-section');
       if (!sec) return;
-
       if (!window._guides.length) {
-        sec.innerHTML = renderFallbackGuide();
+        sec.innerHTML = `
+          <div class="about-section" style="display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;">
+            <div class="about-visual">
+              <div class="about-portrait">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;padding-bottom:4rem;">
+                  <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:300;color:var(--muted);">Your guide</div>
+                  <div style="font-family:'Fraunces',serif;font-size:2.8rem;font-weight:900;color:var(--ink);letter-spacing:-0.04em;line-height:1;text-align:center;">Good Good<br>Copenhagen</div>
+                  <div style="width:40px;height:2px;background:var(--rust);"></div>
+                </div>
+              </div>
+              <div class="about-badge">Born &<br>raised<br>in CPH</div>
+            </div>
+            <div class="about-content">
+              <div class="section-label">Meet your guide</div>
+              <h2 style="font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2rem,3.5vw,3rem);letter-spacing:-0.04em;line-height:1.1;margin-bottom:1.5rem;">I'm not<br>a brand.<br>I'm <em style="font-style:italic;font-weight:300;color:var(--rust);">local.</em></h2>
+              <p style="font-size:1rem;font-weight:300;color:var(--muted);line-height:1.8;margin-bottom:1.5rem;">Born and raised in Copenhagen. Add your guide profile from the dashboard to show it here.</p>
+              <a href="#book" class="btn-primary">Book a tour with me</a>
+            </div>
+          </div>`;
         return;
       }
-
-      // Build slider HTML
-      const slidesHTML = window._guides.map((g, i) => {
-        const gReviews = allReviews.filter(r => r.guide_id === g.id);
-        return buildGuideSlide(g, gReviews);
-      }).join('');
-
-      const dotsHTML = window._guides.length > 1
-        ? `<div style="display:flex;align-items:center;gap:0.75rem;margin-top:2rem;">
-            <button onclick="slideGuide(-1)" style="width:36px;height:36px;border:1.5px solid var(--ink);border-radius:50%;background:transparent;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;" onmouseover="this.style.background='var(--ink)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--ink)'">←</button>
-            <div style="display:flex;gap:0.4rem;" id="guide-dots">
-              ${window._guides.map((_,i) => `<button onclick="goToGuide(${i})" style="width:8px;height:8px;border-radius:50%;background:${i===0?'var(--rust)':'var(--sand)'};border:none;cursor:pointer;padding:0;transition:background 0.2s;" id="gdot-${i}"></button>`).join('')}
-            </div>
-            <button onclick="slideGuide(1)" style="width:36px;height:36px;border:1.5px solid var(--ink);border-radius:50%;background:transparent;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;" onmouseover="this.style.background='var(--ink)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--ink)'">→</button>
-          </div>` : '';
-
+      // Show guide cards
       sec.innerHTML = `
-        <div style="overflow:hidden;">
-          <div id="guide-slider" style="display:flex;transition:transform 0.45s cubic-bezier(0.4,0,0.2,1);">
-            ${slidesHTML}
-          </div>
-        </div>
-        ${dotsHTML}`;
-
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+          ${window._guides.map((g,i) => `
+            <div onclick="openGuideProfile(${i})" style="cursor:pointer;background:var(--white);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;width:220px;flex-shrink:0;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+              ${g.photo_url
+                ? `<img src="${g.photo_url}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;">`
+                : `<div style="width:100%;aspect-ratio:3/4;background:var(--sand);display:flex;align-items:center;justify-content:center;"><span style="font-family:'Fraunces',serif;font-weight:900;font-size:1.5rem;color:var(--ink);">${g.name.split(' ')[0]}</span></div>`}
+              <div style="padding:1rem;">
+                <div style="font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;letter-spacing:-0.02em;color:var(--ink);margin-bottom:0.25rem;">${g.name}</div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.75rem;">${g.languages}</div>
+                <div style="font-size:0.75rem;font-weight:500;color:var(--rust);text-transform:uppercase;letter-spacing:0.08em;">View profile →</div>
+              </div>
+            </div>`).join('')}
+        </div>`;
     } catch(e) { console.error('Could not load guides', e); }
 
     // Load articles
@@ -1585,94 +1592,61 @@
     }
   }
 
-  // ── Guide helpers ──
-  function buildGuideSlide(g, reviews) {
-    const photoHTML = g.photo_url
-      ? `<img src="${g.photo_url}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border:1.5px solid var(--ink);border-radius:4px;display:block;">`
-      : `<div style="width:100%;aspect-ratio:3/4;background:var(--sand);border:1.5px solid var(--ink);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;padding:2rem;text-align:center;">
-          <div style="font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--ink);">${g.name}</div>
-          <div style="width:40px;height:2px;background:var(--rust);"></div>
-        </div>`;
+  // ── Guide profile modal ──
+  async function openGuideProfile(idx) {
+    const g = (window._guides||[])[idx];
+    if (!g) return;
 
-    const reviewsHTML = reviews.length ? reviews.slice(0,5).map(r => `
+    // Fetch reviews
+    let reviews = [];
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/reviews?select=*&guide_id=eq.${g.id}&active=eq.true&order=reviewed_at.desc`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+      });
+      const d = await r.json();
+      reviews = Array.isArray(d) ? d : [];
+    } catch(e) {}
+
+    const reviewsHTML = reviews.length ? reviews.map(r => `
       <div style="padding:1.5rem 0;border-bottom:1px solid var(--sand);">
         <div style="color:var(--rust);font-size:0.95rem;letter-spacing:0.08em;margin-bottom:0.75rem;">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
         <blockquote style="font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:1.1rem;line-height:1.7;color:var(--ink);margin:0 0 0.9rem 0;">"${r.text}"</blockquote>
         <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
           <span style="font-size:0.82rem;font-weight:500;color:var(--ink);">${r.reviewer}</span>
           <span style="color:var(--sand-dark);">·</span>
-          <span style="font-size:0.78rem;color:var(--muted);">${new Date(r.reviewed_at + 'T00:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</span>
+          <span style="font-size:0.78rem;color:var(--muted);">${new Date(r.reviewed_at+'T00:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</span>
           ${r.source_url
             ? `<a href="${r.source_url}" target="_blank" rel="noopener" style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--rust);text-decoration:none;border:1px solid var(--rust);padding:0.12rem 0.45rem;border-radius:2px;">${r.source} ↗</a>`
             : `<span style="font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--rust);border:1px solid var(--rust);padding:0.12rem 0.45rem;border-radius:2px;">${r.source}</span>`}
         </div>
-      </div>`).join('') : '';
+      </div>`).join('') : '<p style="color:var(--muted);font-size:0.9rem;font-style:italic;">No reviews yet.</p>';
 
-    const reviewsSection = reviews.length ? `
-      <div style="margin-top:3rem;border-top:1.5px solid var(--sand);padding-top:0.5rem;">
-        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);margin:1.5rem 0;">What guests say</div>
-        ${reviewsHTML}
-      </div>` : '';
-
-    return `<div style="min-width:100%;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;padding:0 0.25rem;" class="guide-slide-inner">
-      <div style="position:relative;">
-        ${photoHTML}
-        <div class="about-badge">Born &<br>raised<br>in CPH</div>
-      </div>
-      <div>
-        <div class="section-label">Meet your guide</div>
-        <h2 style="font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2rem,3.5vw,3rem);letter-spacing:-0.04em;line-height:1.1;margin-bottom:1.5rem;color:var(--ink);">${g.name}</h2>
-        <p style="font-size:1rem;font-weight:300;color:var(--muted);line-height:1.8;margin-bottom:1rem;">${g.bio}</p>
-        <ul class="about-bullets" style="margin:1rem 0 1.5rem;">
-          <li>Speaks: ${g.languages}</li>
-        </ul>
-        <a href="#book" class="btn-primary">Book a tour with ${g.name.split(' ')[0]}</a>
-        ${reviewsSection}
-      </div>
-    </div>`;
-  }
-
-  function renderFallbackGuide() {
-    return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;">
-      <div style="position:relative;">
-        <div class="about-portrait">
-          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem;padding-bottom:4rem;">
-            <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:300;color:var(--muted);">Your guide</div>
-            <div style="font-family:'Fraunces',serif;font-size:2.8rem;font-weight:900;color:var(--ink);letter-spacing:-0.04em;line-height:1;text-align:center;">Good Good<br>Copenhagen</div>
-            <div style="width:40px;height:2px;background:var(--rust);"></div>
-          </div>
+    document.getElementById('guide-modal-content').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:0;" class="guide-modal-grid">
+        <div style="background:var(--sand);">
+          ${g.photo_url
+            ? `<img src="${g.photo_url}" style="width:100%;height:100%;min-height:300px;object-fit:cover;display:block;">`
+            : `<div style="width:100%;min-height:300px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--ink);">${g.name.split(' ')[0]}</div>`}
         </div>
-        <div class="about-badge">Born &<br>raised<br>in CPH</div>
-      </div>
-      <div class="about-content">
-        <div class="section-label">Meet your guide</div>
-        <h2>I'm not<br>a brand.<br>I'm <em>local.</em></h2>
-        <p style="font-size:1rem;font-weight:300;color:var(--muted);line-height:1.8;">Add your guide profile from the dashboard to show it here.</p>
-        <a href="#book" class="btn-primary">Book a tour with me</a>
-      </div>
-    </div>`;
+        <div style="padding:2rem;overflow-y:auto;max-height:85vh;">
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.5rem;">Your local guide</div>
+          <h2 style="font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.8rem,3vw,2.5rem);letter-spacing:-0.04em;line-height:1.1;color:var(--ink);margin-bottom:1rem;">${g.name}</h2>
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:1.5rem;">🗣 Speaks: ${g.languages}</div>
+          <p style="font-size:0.95rem;font-weight:300;color:var(--muted);line-height:1.8;margin-bottom:1.5rem;">${g.bio}</p>
+          <a href="#book" onclick="document.getElementById('guide-modal').style.display='none';document.body.style.overflow='';" class="btn-primary" style="display:inline-block;margin-bottom:2rem;">Book a tour with ${g.name.split(' ')[0]}</a>
+          ${reviews.length ? `
+          <div style="border-top:1.5px solid var(--sand);padding-top:1.5rem;">
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);margin-bottom:0.5rem;">What guests say</div>
+            ${reviewsHTML}
+          </div>` : ''}
+        </div>
+      </div>`;
+
+    document.getElementById('guide-modal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
   }
 
-  // ── Guide slider ──
-  let guideIdx = 0;
-  function slideGuide(dir) {
-    const guides = window._guides || [];
-    guideIdx = (guideIdx + dir + guides.length) % guides.length;
-    goToGuide(guideIdx);
-  }
-  function goToGuide(idx) {
-    const slider = document.getElementById('guide-slider');
-    if (!slider) return;
-    guideIdx = idx;
-    slider.style.transform = `translateX(-${idx * 100}%)`;
-    const guides = window._guides || [];
-    guides.forEach((_,i) => {
-      const d = document.getElementById('gdot-'+i);
-      if (d) d.style.background = i===idx ? 'var(--rust)' : 'var(--sand)';
-    });
-  }
-
-  // ── Article modal ──
+  // ── Article modal ──  // ── Article modal ──
   function openArticle(idx) {
     const a = window._articles[idx];
     const CATS = { news:'📰 News', update:'🔄 Update', guide:'🗺️ Guide', event:'🎉 Event' };
