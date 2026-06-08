@@ -353,8 +353,8 @@ a{text-decoration:none;color:inherit;}
 
   <!-- RIGHT: reviews + latest story -->
   <div>
-    <div class="section-label-text">What guests say</div>
-    <div class="section-title" style="font-size:1.4rem;margin-bottom:1rem;">Real <em>words.</em></div>
+    <div class="section-label-text" id="txt-reviews_label">What guests say</div>
+    <div class="section-title" style="font-size:1.4rem;margin-bottom:1rem;">Real <em id="txt-reviews_sub">words.</em></div>
     <div id="reviews-right">
       <div class="rev-item"><div class="rev-stars">★★★★★</div><div class="rev-text">"The best three hours of our entire trip."</div><div class="rev-author">Sam & Jo · London</div></div>
       <div class="rev-item"><div class="rev-stars">★★★★★</div><div class="rev-text">"One tour and suddenly the city made sense."</div><div class="rev-author">Ryo T. · Tokyo</div></div>
@@ -385,8 +385,8 @@ a{text-decoration:none;color:inherit;}
 <!-- GUIDES SECTION -->
 <section id="guides" class="guides-section">
   <div class="guides-header">
-    <div class="guides-section-label">Meet our team</div>
-    <div class="guides-section-title">Our <em>guides</em></div>
+    <div class="guides-section-label" id="txt-guides_label">Meet our team</div>
+    <div class="guides-section-title"><span id="txt-guides_title">Our </span><em>guides</em></div>
   </div>
   <div class="guides-cards" id="guides-cards">
     <div style="font-family:'DM Sans',sans-serif;font-size:0.8rem;color:var(--muted);">Loading guides...</div>
@@ -397,8 +397,8 @@ a{text-decoration:none;color:inherit;}
 <section class="reviews-section" id="reviews">
   <div class="reviews-top">
     <div>
-      <div class="reviews-label">What guests say</div>
-      <div class="reviews-title">Real people.<br><em>Real words.</em></div>
+      <div class="reviews-label" id="txt-reviews_section_label">What guests say</div>
+      <div class="reviews-title"><span id="txt-reviews_title">Real people.</span><br><em id="txt-reviews_title2">Real words.</em></div>
     </div>
     <div class="reviews-nav" id="reviews-nav" style="display:none;">
       <button class="rev-nav-btn" onclick="slideReview(-1)">←</button>
@@ -503,7 +503,7 @@ a{text-decoration:none;color:inherit;}
 <footer>
   <div class="footer">
     <div class="footer-text">
-      <h2>Ready for one more street?</h2>
+      <h2 id="txt-footer_title">Ready for one more street?</h2>
       <p>Small groups. Local guides. Pay on the day.</p>
     </div>
     <a href="#book" class="footer-btn">Book a tour now →</a>
@@ -607,14 +607,22 @@ async function loadContent() {
 
       // Page text fields — map setting key to element id
       const textMap = {
-        'hero_tagline':      'txt-hero_tagline',
-        'featured_tag':      'centre-tag',
-        'featured_body':     'centre-body',
-        'featured_pullquote':'centre-quote',
-        'featured_extra':    'centre-extra',
-        'booking_title':     'txt-booking_title',
-        'booking_sub':       'txt-booking_sub',
-        'footer_tagline':    'txt-footer_tagline',
+        'hero_tagline':           'txt-hero_tagline',
+        'featured_tag':           'centre-tag',
+        'featured_body':          'centre-body',
+        'featured_pullquote':     'centre-quote',
+        'featured_extra':         'centre-extra',
+        'booking_title':          'txt-booking_title',
+        'booking_sub':            'txt-booking_sub',
+        'footer_tagline':         'txt-footer_tagline',
+        'footer_title':           'txt-footer_title',
+        'guides_label':           'txt-guides_label',
+        'guides_title':           'txt-guides_title',
+        'reviews_label':          'txt-reviews_label',
+        'reviews_sub':            'txt-reviews_sub',
+        'reviews_section_label':  'txt-reviews_section_label',
+        'reviews_title':          'txt-reviews_title',
+        'reviews_title2':         'txt-reviews_title2',
       };
       Object.entries(textMap).forEach(([key, elId]) => {
         if (cfg[key]) {

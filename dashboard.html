@@ -354,6 +354,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
           <div class="sform-row"><label class="slabel">Booking — title</label><input id="st-booking_title" class="sinput" placeholder="Book a tour"></div>
           <div class="sform-row"><label class="slabel">Booking — subtitle</label><input id="st-booking_sub" class="sinput" placeholder="Small groups. Local guides."></div>
           <div class="sform-row"><label class="slabel">Footer — tagline</label><input id="st-footer_tagline" class="sinput" placeholder="Small groups. Local guides. Pay on the day."></div>
+          <div class="sform-row"><label class="slabel">Footer — title ("Ready for one more street?")</label><input id="st-footer_title" class="sinput" placeholder="Ready for one more street?"></div>
+          <div class="sform-row"><label class="slabel">Guides — label ("Meet our team")</label><input id="st-guides_label" class="sinput" placeholder="Meet our team"></div>
+          <div class="sform-row"><label class="slabel">Guides — title ("Our")</label><input id="st-guides_title" class="sinput" placeholder="Our"></div>
+          <div class="sform-row"><label class="slabel">Reviews column — label ("What guests say")</label><input id="st-reviews_label" class="sinput" placeholder="What guests say"></div>
+          <div class="sform-row"><label class="slabel">Reviews column — sub italic ("words.")</label><input id="st-reviews_sub" class="sinput" placeholder="words."></div>
+          <div class="sform-row"><label class="slabel">Reviews section — label ("What guests say")</label><input id="st-reviews_section_label" class="sinput" placeholder="What guests say"></div>
+          <div class="sform-row"><label class="slabel">Reviews section — line 1 ("Real people.")</label><input id="st-reviews_title" class="sinput" placeholder="Real people."></div>
+          <div class="sform-row"><label class="slabel">Reviews section — line 2 italic ("Real words.")</label><input id="st-reviews_title2" class="sinput" placeholder="Real words."></div>
         </div>
         <div class="scard-actions">
           <button class="sbtn sbtn-save" onclick="savePageText()">Save page text</button>
@@ -1182,7 +1190,7 @@ async function uploadHeroPhoto(input) {
 }
 
 async function savePageText() {
-  const keys = ['hero_tagline','featured_tag','featured_title','featured_body','featured_pullquote','featured_extra','booking_title','booking_sub','footer_tagline'];
+  const keys = ['hero_tagline','featured_tag','featured_title','featured_body','featured_pullquote','featured_extra','booking_title','booking_sub','footer_tagline','footer_title','guides_label','guides_title','reviews_label','reviews_sub','reviews_section_label','reviews_title','reviews_title2'];
   for (const key of keys) {
     const el = document.getElementById('st-'+key);
     if (!el) continue;
