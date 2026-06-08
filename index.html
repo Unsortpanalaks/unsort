@@ -331,7 +331,7 @@ a{text-decoration:none;color:inherit;}
 
   <!-- CENTRE: featured tour -->
   <div>
-    <div class="main-tag">Featured · Copenhagen Tours</div>
+    <div class="main-tag" id="centre-tag">Featured · Local Tour</div>
     <div class="main-title" id="centre-title">Seven stops through the city's <em>most hidden corners</em></div>
     <div class="teal-rule"></div>
     <div style="position:relative;overflow:hidden;height:220px;background:var(--paper);" id="centre-img-wrap">
@@ -610,7 +610,12 @@ async function loadContent() {
     renderToursGrid();
     renderToursLeft();
     loadTourCardPhotos();
-    updateBookingSelect();
+    // update booking select
+    const sel = document.getElementById('f-tour');
+    if (sel) {
+      sel.innerHTML = '<option value="">Select a tour…</option>' +
+        _tours.map(t => `<option value="${t.id}">${t.tagline||t.title} — ${t.title} · ${t.price_dkk} DKK/person</option>`).join('');
+    }
   } catch(e){ console.error('Tours:', e); }
 
   // Guides
@@ -646,8 +651,11 @@ async function loadContent() {
   // Featured centre tour
   if (_tours.length) {
     const featured = _tours[0];
-    document.getElementById('centre-title').innerHTML = featured.title.replace(' ', '<br>');
+    document.getElementById('centre-title').innerHTML = featured.title;
     document.getElementById('centre-body').textContent = featured.description;
+    if (document.getElementById('centre-tag')) {
+      document.getElementById('centre-tag').textContent = (featured.tagline||'Local Tour') + ' · Featured';
+    }
     try {
       const r = await fetch(`${SUPABASE_URL}/rest/v1/tour_photos?select=*&tour_id=eq.${featured.id}&order=sort_order`, {headers:HDRS});
       const photos = await r.json();
@@ -693,7 +701,7 @@ function renderToursGrid() {
         <div style="position:absolute;inset:0;z-index:3;" onclick="openTourModal(${i})"></div>
       </div>
       <div class="tour-card-body">
-        <div class="tour-card-tag">${t.duration} · Max ${t.max_group}</div>
+        <div class="tour-card-tag">${t.tagline||'Local Tour'} · ${t.duration}</div>
         <div class="tour-card-title">${t.title}</div>
         <div class="tour-card-desc">${t.description.substring(0,120)}…</div>
         <div class="tour-card-meta">
@@ -776,9 +784,9 @@ function renderToursLeft() {
   if (!_tours.length) return;
   el.innerHTML = _tours.map((t,i) => `
     <div class="tour-item" onclick="openTourModal(${i})">
-      <div class="tour-tag">${t.title.split(' ').slice(-2).join(' ')} · ${t.duration}</div>
+      <div class="tour-tag">${t.tagline||'Local Tour'}</div>
       <div class="tour-title">${t.title}</div>
-      <div class="tour-price">${t.price_dkk} DKK / person</div>
+      <div class="tour-price">${t.price_dkk} DKK / person · ${t.duration}</div>
     </div>`).join('');
 }
 
@@ -980,7 +988,7 @@ async function openTourModal(idx) {
     <div class="tour-modal-body">
       <div class="tour-modal-head">
         <div>
-          <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-family:'DM Sans',sans-serif;margin-bottom:0.3rem;">Copenhagen · Local tour</div>
+          <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--teal);font-family:'DM Sans',sans-serif;margin-bottom:0.3rem;">${t.tagline||'Local Tour'} · Copenhagen</div>
           <div class="tour-modal-title">${t.title}</div>
         </div>
         <div class="tour-modal-price">${t.price_dkk} <span>DKK / person</span></div>
