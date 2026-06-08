@@ -232,6 +232,13 @@ a{text-decoration:none;color:inherit;}
 .tour-highlights li::before{content:'✓';color:var(--green);flex-shrink:0;}
 .tour-modal-meeting{background:var(--paper2);padding:0.85rem;font-size:0.85rem;color:var(--ink);}
 .tour-modal-meeting span{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-family:'DM Sans',sans-serif;display:block;margin-bottom:0.2rem;}
+.tour-card-photo{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;cursor:pointer;transition:opacity 0.2s;}
+.tour-card-photo:hover{opacity:0.88;}
+.tour-card-photo-placeholder{width:100%;aspect-ratio:16/9;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:2.5rem;cursor:pointer;}
+.photo-strip{display:flex;gap:4px;padding:4px;background:var(--ink);}
+.photo-strip-thumb{width:56px;height:42px;object-fit:cover;cursor:pointer;opacity:0.6;transition:opacity 0.2s;flex-shrink:0;}
+.photo-strip-thumb.active,.photo-strip-thumb:hover{opacity:1;}
+.photo-strip-more{width:56px;height:42px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:rgba(255,255,255,0.6);font-family:"DM Sans",sans-serif;cursor:pointer;flex-shrink:0;}
 .tour-book-btn{display:block;width:100%;background:var(--ink);color:white;padding:1.1rem;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;border:none;cursor:pointer;text-align:center;margin-top:1rem;}
 /* article modal */
 .article-modal-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
@@ -579,6 +586,7 @@ async function loadContent() {
     if (!Array.isArray(_tours)) _tours = [];
     renderToursGrid();
     renderToursLeft();
+    loadTourCardPhotos();
     updateBookingSelect();
   } catch(e){ console.error('Tours:', e); }
 
@@ -632,7 +640,9 @@ function renderToursGrid() {
   if (!_tours.length) return;
   grid.innerHTML = _tours.map((t,i) => `
     <div class="tour-card">
-      <div class="tour-card-icon">${t.icon||'🗺️'}</div>
+      <div onclick="openTourModal(${i})" id="tour-card-thumb-${t.id}">
+        <div class="tour-card-photo-placeholder" id="tour-thumb-inner-${t.id}"><span style="font-size:2.5rem;">${t.icon||'🗺️'}</span></div>
+      </div>
       <div class="tour-card-body">
         <div class="tour-card-tag">${t.duration} · Max ${t.max_group}</div>
         <div class="tour-card-title">${t.title}</div>
@@ -648,6 +658,19 @@ function renderToursGrid() {
         </div>
       </div>
     </div>`).join('');
+}
+
+async function loadTourCardPhotos() {
+  for (const t of _tours) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/tour_photos?select=*&tour_id=eq.${t.id}&order=sort_order&limit=1`, {headers:HDRS});
+      const photos = await r.json();
+      if (Array.isArray(photos) && photos.length) {
+        const el = document.getElementById('tour-thumb-inner-'+t.id);
+        if (el) el.outerHTML = `<img src="${photos[0].photo_url}" class="tour-card-photo" alt="${t.title}" onclick="openTourModal(${_tours.indexOf(t)})">`;
+      }
+    } catch(e){}
+  }
 }
 
 function renderToursLeft() {
@@ -817,15 +840,22 @@ async function openTourModal(idx) {
   } catch(e){}
   const highlights = t.highlights ? t.highlights.split('\n').filter(h=>h.trim()) : [];
   const galleryHTML = photos.length ? `
-    <div class="gallery-wrap">
-      <div class="gallery-inner" id="ginner">
-        ${photos.map(p=>`<img src="${p.photo_url}" alt="">`).join('')}
+    <div style="background:var(--ink);">
+      <div class="gallery-wrap">
+        <div class="gallery-inner" id="ginner">
+          ${photos.map(p=>`<img src="${p.photo_url}" alt="" style="min-width:100%;aspect-ratio:16/9;object-fit:cover;display:block;">`).join('')}
+        </div>
+        ${photos.length>1?`
+          <button class="gallery-btn gallery-btn-l" onclick="slideGallery(-1)">←</button>
+          <button class="gallery-btn gallery-btn-r" onclick="slideGallery(1)">→</button>
+          <div class="gallery-dots">${photos.map((_,i)=>`<div class="gdot${i===0?' active':''}" id="gdot-${i}"></div>`).join('')}</div>
+        `:''}
       </div>
       ${photos.length>1?`
-        <button class="gallery-btn gallery-btn-l" onclick="slideGallery(-1)">←</button>
-        <button class="gallery-btn gallery-btn-r" onclick="slideGallery(1)">→</button>
-        <div class="gallery-dots">${photos.map((_,i)=>`<div class="gdot${i===0?' active':''}" id="gdot-${i}"></div>`).join('')}</div>
-      `:''}
+      <div class="photo-strip">
+        ${photos.map((p,i)=>`<img src="${p.photo_url}" class="photo-strip-thumb${i===0?' active':''}" id="gthumb-${i}" onclick="goToGallery(${i})" alt="">`).join('')}
+        ${photos.length>5?`<div class="photo-strip-more">+${photos.length-5}</div>`:''}
+      </div>`:''}
     </div>` : `<div style="width:100%;aspect-ratio:16/9;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:3rem;">${t.icon||'🗺️'}</div>`;
   document.getElementById('tour-modal-content').innerHTML = `
     ${galleryHTML}
@@ -863,10 +893,20 @@ function slideGallery(dir) {
   const len = window._galleryLen||0;
   if (!len) return;
   window._galleryIdx = (window._galleryIdx + dir + len) % len;
-  const idx = window._galleryIdx;
+  goToGallery(window._galleryIdx);
+}
+
+function goToGallery(idx) {
+  window._galleryIdx = idx;
   const inner = document.getElementById('ginner');
   if (inner) inner.style.transform = `translateX(-${idx*100}%)`;
-  for(let i=0;i<len;i++){const d=document.getElementById('gdot-'+i);if(d)d.classList.toggle('active',i===idx);}
+  const len = window._galleryLen||0;
+  for(let i=0;i<len;i++){
+    const d=document.getElementById('gdot-'+i);
+    if(d)d.classList.toggle('active',i===idx);
+    const th=document.getElementById('gthumb-'+i);
+    if(th)th.classList.toggle('active',i===idx);
+  }
 }
 
 function openArticleModal(idx) {
