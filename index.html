@@ -286,7 +286,7 @@ a{text-decoration:none;color:inherit;}
 <body>
 
 <div class="band">
-  <span>Copenhagen · Local Tours · Est. 2024</span>
+  <span id="txt-hero_tagline">Copenhagen · Local Tours · Est. 2024</span>
   <span>Small groups · Pay on the day · Born here</span>
 </div>
 
@@ -345,7 +345,7 @@ a{text-decoration:none;color:inherit;}
     </div>
     <div class="main-body" id="centre-body">From the market stalls of Torvehallerne to a natural wine bar in Nørrebro that has no sign outside. We eat properly on this tour — no tiny tasting portions, no laminated menus. Just the places we actually go to, week after week.</div>
     <div class="pull-quote"><p id="centre-quote">"In Copenhagen, every corner holds a story."</p></div>
-    <div style="font-size:1rem;line-height:1.85;color:#444;" id="centre-extra">Every stop on this tour has been chosen over years of living here — not as a tourist, but as a resident who simply loves good food and the people who make it.</div>
+    <div style="font-size:1.08rem;line-height:1.95;color:#2a2a2a;" id="centre-extra">Every stop on this tour has been chosen over years of living here — not as a tourist, but as a resident who simply loves good food and the people who make it.</div>
     <button class="btn-book" style="margin-top:1rem;" onclick="document.getElementById('book').scrollIntoView({behavior:'smooth'})">Book a tour →</button>
   </div>
 
@@ -428,8 +428,8 @@ a{text-decoration:none;color:inherit;}
 <!-- BOOKING SECTION -->
 <section id="book" class="booking-section">
   <div class="booking-inner">
-    <div class="booking-title">Book a tour</div>
-    <div class="booking-sub">Small groups. Local guides. You pay on the day — no upfront payment required.</div>
+    <div class="booking-title" id="txt-booking_title">Book a tour</div>
+    <div class="booking-sub" id="txt-booking_sub">Small groups. Local guides. You pay on the day — no upfront payment required.</div>
     <div class="step-progress">
       <div class="step-dot active" id="sdot-1"></div>
       <div class="step-dot" id="sdot-2"></div>
@@ -589,18 +589,46 @@ fetchCapacity();
 let _tours = [], _guides = [], _allReviews = [], _articles = [];
 
 async function loadContent() {
-  // Hero photo
+  // All settings (hero photo + page text)
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/settings?key=eq.hero_photo&select=value`, {headers:HDRS});
-    const d = await r.json();
-    if (d.length && d[0].value) {
-      const img = document.getElementById('hero-photo-el');
-      const fallback = document.getElementById('hero-fallback');
-      img.src = d[0].value;
-      img.style.display = 'block';
-      if (fallback) fallback.style.display = 'none';
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/settings?select=key,value`, {headers:HDRS});
+    const rows = await r.json();
+    if (Array.isArray(rows)) {
+      const cfg = {};
+      rows.forEach(r => cfg[r.key] = r.value);
+
+      // Hero photo
+      if (cfg.hero_photo) {
+        const img = document.getElementById('hero-photo-el');
+        const fallback = document.getElementById('hero-fallback');
+        if (img) { img.src = cfg.hero_photo; img.style.display = 'block'; }
+        if (fallback) fallback.style.display = 'none';
+      }
+
+      // Page text fields — map setting key to element id
+      const textMap = {
+        'hero_tagline':      'txt-hero_tagline',
+        'featured_tag':      'centre-tag',
+        'featured_body':     'centre-body',
+        'featured_pullquote':'centre-quote',
+        'featured_extra':    'centre-extra',
+        'booking_title':     'txt-booking_title',
+        'booking_sub':       'txt-booking_sub',
+        'footer_tagline':    'txt-footer_tagline',
+      };
+      Object.entries(textMap).forEach(([key, elId]) => {
+        if (cfg[key]) {
+          const el = document.getElementById(elId);
+          if (el) el.textContent = cfg[key];
+        }
+      });
+      // Featured title handled separately (may include em tag)
+      if (cfg.featured_title) {
+        const el = document.getElementById('centre-title');
+        if (el) el.textContent = cfg.featured_title;
+      }
     }
-  } catch(e){}
+  } catch(e){ console.error('Settings:', e); }
 
   // Tours
   try {
