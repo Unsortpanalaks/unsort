@@ -232,6 +232,21 @@ a{text-decoration:none;color:inherit;}
 .tour-highlights li::before{content:'✓';color:var(--green);flex-shrink:0;}
 .tour-modal-meeting{background:var(--paper2);padding:0.85rem;font-size:0.85rem;color:var(--ink);}
 .tour-modal-meeting span{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-family:'DM Sans',sans-serif;display:block;margin-bottom:0.2rem;}
+.tour-card-slider{position:relative;overflow:hidden;aspect-ratio:16/9;background:var(--paper);cursor:pointer;}
+.tour-card-slides{display:flex;transition:transform 0.4s ease;height:100%;}
+.tour-card-slides img{min-width:100%;height:100%;object-fit:cover;display:block;flex-shrink:0;}
+.tour-card-slide-placeholder{min-width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;background:var(--paper);flex-shrink:0;}
+.card-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(17,17,17,0.55);color:white;border:none;width:30px;height:30px;border-radius:50%;font-size:0.9rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center;transition:background 0.2s;opacity:0;}
+.tour-card-slider:hover .card-arrow{opacity:1;}
+.card-arrow-l{left:0.5rem;}
+.card-arrow-r{right:0.5rem;}
+.card-dots{position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:5;}
+.card-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.5);border:none;padding:0;cursor:pointer;transition:background 0.2s;}
+.card-dot.active{background:white;}
+.card-photo-count{position:absolute;top:0.5rem;right:0.5rem;background:rgba(17,17,17,0.6);color:white;font-size:0.6rem;font-family:"DM Sans",sans-serif;padding:0.2rem 0.45rem;border-radius:2px;z-index:5;}
+.tour-card-photo{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;cursor:pointer;transition:opacity 0.2s;}
+.tour-card-photo:hover{opacity:0.88;}
+.tour-card-photo-placeholder{width:100%;aspect-ratio:16/9;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:2.5rem;cursor:pointer;}
 .tour-card-photo{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;cursor:pointer;transition:opacity 0.2s;}
 .tour-card-photo:hover{opacity:0.88;}
 .tour-card-photo-placeholder{width:100%;aspect-ratio:16/9;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:2.5rem;cursor:pointer;}
@@ -640,8 +655,15 @@ function renderToursGrid() {
   if (!_tours.length) return;
   grid.innerHTML = _tours.map((t,i) => `
     <div class="tour-card">
-      <div onclick="openTourModal(${i})" id="tour-card-thumb-${t.id}">
-        <div class="tour-card-photo-placeholder" id="tour-thumb-inner-${t.id}"><span style="font-size:2.5rem;">${t.icon||'🗺️'}</span></div>
+      <div class="tour-card-slider" id="card-slider-${t.id}">
+        <div class="tour-card-slides" id="card-slides-${t.id}">
+          <div class="tour-card-slide-placeholder">${t.icon||'🗺️'}</div>
+        </div>
+        <button class="card-arrow card-arrow-l" id="card-al-${t.id}" onclick="cardSlide('${t.id}',-1,event)" style="display:none;">←</button>
+        <button class="card-arrow card-arrow-r" id="card-ar-${t.id}" onclick="cardSlide('${t.id}',1,event)" style="display:none;">→</button>
+        <div class="card-dots" id="card-dots-${t.id}"></div>
+        <div class="card-photo-count" id="card-count-${t.id}" style="display:none;"></div>
+        <div style="position:absolute;inset:0;z-index:3;" onclick="openTourModal(${i})"></div>
       </div>
       <div class="tour-card-body">
         <div class="tour-card-tag">${t.duration} · Max ${t.max_group}</div>
@@ -660,17 +682,66 @@ function renderToursGrid() {
     </div>`).join('');
 }
 
+const _cardSlideIdx = {};
+
 async function loadTourCardPhotos() {
   for (const t of _tours) {
     try {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/tour_photos?select=*&tour_id=eq.${t.id}&order=sort_order&limit=1`, {headers:HDRS});
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/tour_photos?select=*&tour_id=eq.${t.id}&order=sort_order`, {headers:HDRS});
       const photos = await r.json();
-      if (Array.isArray(photos) && photos.length) {
-        const el = document.getElementById('tour-thumb-inner-'+t.id);
-        if (el) el.outerHTML = `<img src="${photos[0].photo_url}" class="tour-card-photo" alt="${t.title}" onclick="openTourModal(${_tours.indexOf(t)})">`;
+      if (!Array.isArray(photos) || !photos.length) continue;
+      _cardSlideIdx[t.id] = 0;
+      const slidesEl = document.getElementById('card-slides-'+t.id);
+      const dotsEl   = document.getElementById('card-dots-'+t.id);
+      const countEl  = document.getElementById('card-count-'+t.id);
+      const alEl     = document.getElementById('card-al-'+t.id);
+      const arEl     = document.getElementById('card-ar-'+t.id);
+      if (!slidesEl) continue;
+      // Build slides
+      slidesEl.innerHTML = photos.map(p =>
+        `<img src="${p.photo_url}" alt="${t.title}" style="min-width:100%;height:100%;object-fit:cover;display:block;flex-shrink:0;">`
+      ).join('');
+      // Build dots (only if >1 photo)
+      if (photos.length > 1 && dotsEl) {
+        dotsEl.innerHTML = photos.map((_,i) =>
+          `<button class="card-dot${i===0?' active':''}" id="cdot-${t.id}-${i}" onclick="goCardSlide('${t.id}',${i},event)"></button>`
+        ).join('');
+        if (alEl) alEl.style.display = 'flex';
+        if (arEl) arEl.style.display = 'flex';
+      }
+      if (countEl && photos.length > 1) {
+        countEl.textContent = `1 / ${photos.length}`;
+        countEl.style.display = 'block';
       }
     } catch(e){}
   }
+}
+
+function cardSlide(tourId, dir, e) {
+  if (e) e.stopPropagation();
+  const photos = _cardSlideIdx[tourId];
+  if (photos === undefined) return;
+  const slidesEl = document.getElementById('card-slides-'+tourId);
+  if (!slidesEl) return;
+  const total = slidesEl.children.length;
+  const newIdx = ((_cardSlideIdx[tourId]||0) + dir + total) % total;
+  goCardSlide(tourId, newIdx, e);
+}
+
+function goCardSlide(tourId, idx, e) {
+  if (e) e.stopPropagation();
+  _cardSlideIdx[tourId] = idx;
+  const slidesEl = document.getElementById('card-slides-'+tourId);
+  if (slidesEl) slidesEl.style.transform = `translateX(-${idx*100}%)`;
+  // update dots
+  const total = slidesEl ? slidesEl.children.length : 0;
+  for (let i=0;i<total;i++) {
+    const d = document.getElementById(`cdot-${tourId}-${i}`);
+    if (d) d.classList.toggle('active', i===idx);
+  }
+  // update count
+  const countEl = document.getElementById('card-count-'+tourId);
+  if (countEl && total>1) countEl.textContent = `${idx+1} / ${total}`;
 }
 
 function renderToursLeft() {
