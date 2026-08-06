@@ -969,6 +969,7 @@ async function openTourModal(idx) {
       ${t.what_to_expect?`<div class="tour-modal-section"><div class="tour-modal-section-label">What to expect</div><div class="tour-modal-desc">${t.what_to_expect.replace(/\n/g,'<br>')}</div></div>`:''}
       ${t.meeting_point?`<div class="tour-modal-meeting"><span>📍 Meeting point</span>${t.meeting_point}</div>`:''}
       <button class="tour-book-btn" onclick="closeModal('tour-modal');prefillTour('${t.id}');">Book this tour — ${t.price_dkk} DKK/person →</button>
+      <a href="tour.html?id=${t.id}" style="display:block;text-align:center;margin-top:0.9rem;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:0.06em;color:var(--blue);font-size:1.1rem;">Read more about this tour →</a>
     </div>`;
   document.getElementById('tour-modal').style.display = 'block';
   document.body.style.overflow = 'hidden';

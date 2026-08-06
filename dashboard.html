@@ -558,6 +558,7 @@ function renderTours() {
           <option value="corporate" ${t.category==='corporate'?'selected':''}>Corporate Tours</option>
         </select></div>
         <div class="cform-row"><label>Description</label><textarea id="t-desc-${t.id}">${t.description}</textarea></div>
+        <div class="cform-row"><label>Full story (shown on the tour's own page — leave empty to hide)</label><textarea id="t-story-${t.id}" rows="6" placeholder="Write the longer story of this tour… blank line = new paragraph">${t.story||''}</textarea></div>
         <div class="cform-2col">
           <div class="cform-row"><label>Duration</label><input id="t-dur-${t.id}" value="${t.duration}"></div>
           <div class="cform-row"><label>Max group size</label><input id="t-max-${t.id}" type="number" value="${t.max_group}"></div>
@@ -587,6 +588,7 @@ async function saveTour(id) {
     max_group: parseInt(document.getElementById('t-max-'+id).value),
     price_dkk: parseInt(document.getElementById('t-price-'+id).value),
     tagline: document.getElementById('t-tagline-'+id).value,
+    story: document.getElementById('t-story-'+id).value,
     category: document.getElementById('t-cat-'+id).value,
     highlights: document.getElementById('t-hl-'+id).value,
     what_to_expect: document.getElementById('t-wte-'+id).value,
