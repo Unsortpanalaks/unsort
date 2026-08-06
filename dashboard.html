@@ -552,6 +552,11 @@ function renderTours() {
           <div class="cform-row"><label>Icon (emoji)</label><input id="t-icon-${t.id}" value="${t.icon}" style="font-size:1.2rem;"></div>
         </div>
         <div class="cform-row"><label>Type tag (e.g. "Food Tour" — shown below the name)</label><input id="t-tagline-${t.id}" value="${t.tagline||''}" placeholder="e.g. Food Tour · Walking Tour · Bike Tour"></div>
+        <div class="cform-row"><label>Section on website</label><select id="t-cat-${t.id}">
+          <option value="tours" ${(t.category||'tours')==='tours'?'selected':''}>Our Tours</option>
+          <option value="private" ${t.category==='private'?'selected':''}>Private Tours</option>
+          <option value="corporate" ${t.category==='corporate'?'selected':''}>Corporate Tours</option>
+        </select></div>
         <div class="cform-row"><label>Description</label><textarea id="t-desc-${t.id}">${t.description}</textarea></div>
         <div class="cform-2col">
           <div class="cform-row"><label>Duration</label><input id="t-dur-${t.id}" value="${t.duration}"></div>
@@ -582,6 +587,7 @@ async function saveTour(id) {
     max_group: parseInt(document.getElementById('t-max-'+id).value),
     price_dkk: parseInt(document.getElementById('t-price-'+id).value),
     tagline: document.getElementById('t-tagline-'+id).value,
+    category: document.getElementById('t-cat-'+id).value,
     highlights: document.getElementById('t-hl-'+id).value,
     what_to_expect: document.getElementById('t-wte-'+id).value,
     meeting_point: document.getElementById('t-mp-'+id).value,

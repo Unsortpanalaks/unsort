@@ -300,7 +300,6 @@ h1,h2,h3{font-family:'Barlow Condensed',sans-serif;}
   <!-- LEFT: tours list + guide -->
   <div>
     <div class="section-label-text">Explore</div>
-    <div class="section-title" style="font-size:1.4rem;margin-bottom:1rem;">Our <em>tours</em></div>
     <div id="tours-list-left">
       <div class="tour-item"><div class="tour-tag">Food Tour · 4 hours</div><div class="tour-title">Eat Copenhagen Like a Local</div><div class="tour-price">590 DKK / person</div></div>
       <div class="tour-item"><div class="tour-tag">Bike Tour · 3 hours</div><div class="tour-title">Copenhagen by Two Wheels</div><div class="tour-price">490 DKK / person</div></div>
@@ -801,12 +800,22 @@ function goCardSlide(tourId, idx, e) {
 function renderToursLeft() {
   const el = document.getElementById('tours-list-left');
   if (!_tours.length) return;
-  el.innerHTML = _tours.map((t,i) => `
-    <div class="tour-item" onclick="openTourModal(${i})">
-      <div class="tour-tag">${t.tagline||'Local Tour'}</div>
-      <div class="tour-title">${t.title}</div>
-      <div class="tour-price">${t.price_dkk} DKK / person · ${t.duration}</div>
-    </div>`).join('');
+  const groups = [
+    {key:'tours',     title:'Our <em>tours</em>'},
+    {key:'private',   title:'Private <em>tours</em>'},
+    {key:'corporate', title:'Corporate <em>tours</em>'},
+  ];
+  el.innerHTML = groups.map((g,gi) => {
+    const list = _tours.filter(t => (t.category||'tours') === g.key);
+    if (!list.length) return '';
+    return `<div class="section-title" style="font-size:1.4rem;margin:${gi===0?'0.35rem':'1.4rem'} 0 0.8rem;">${g.title}</div>` +
+      list.map(t => `
+      <div class="tour-item" onclick="openTourModal(${_tours.indexOf(t)})">
+        <div class="tour-tag">${t.tagline||'Local Tour'}</div>
+        <div class="tour-title">${t.title}</div>
+        <div class="tour-price">${t.price_dkk} DKK / person · ${t.duration}</div>
+      </div>`).join('');
+  }).join('');
 }
 
 function renderGuidesCards() {
