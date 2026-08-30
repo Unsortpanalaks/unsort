@@ -370,15 +370,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 
       <div class="scard">
         <div class="scard-head">
-          <h3>Hero photo</h3>
-          <p>The background photo on the top section of the homepage.</p>
+          <h3>Hero slideshow</h3>
+          <p>Big photos at the top of the homepage. They switch automatically every 5 seconds.</p>
         </div>
         <div class="scard-body">
-          <div id="hero-preview-wrap" style="margin-bottom:0.75rem;">
-            <div style="width:100%;height:100px;background:var(--sand);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.82rem;">No photo yet — upload one below</div>
-          </div>
-          <input type="file" accept="image/*" onchange="uploadHeroPhoto(this)" style="font-size:0.82rem;">
-          <p class="snote">Recommended: wide landscape photo, at least 1400px wide.</p>
+          <div id="hero-list" style="margin-bottom:0.9rem;"><p class="snote">Loading…</p></div>
+          <label class="slabel">Add photos</label>
+          <input type="file" accept="image/*" multiple onchange="uploadHeroSlides(this)" style="font-size:0.82rem;">
+          <p class="snote">Wide landscape photos, at least 1600px wide. You can select several at once.</p>
         </div>
       </div>
 
@@ -934,6 +933,7 @@ async function deleteB(id) {
 
 // SETTINGS
 function loadSettings() {
+    loadHeroSlides();
   if(cfg['guide_email']) document.getElementById('setting-email').value=cfg['guide_email'];
 }
 async function saveSetting(key,value) {
@@ -1155,6 +1155,74 @@ async function deleteTourPhoto(photoId, tourId) {
   await fetch(`${SURL}/rest/v1/tour_photos?id=eq.${photoId}`, {method:'DELETE', headers:hdrs()});
   showToast('Photo deleted.');
   loadTourPhotos(tourId);
+}
+
+let _heroList = [];
+
+async function loadHeroSlides() {
+  const box = document.getElementById('hero-list');
+  if (!box) return;
+  try {
+    const r = await fetch(`${SURL}/rest/v1/hero_photos?select=*&order=sort_order`, {headers:HDRS});
+    const d = await r.json();
+    _heroList = Array.isArray(d) ? d : [];
+  } catch(e) { box.innerHTML = '<p class="snote">Could not load photos.</p>'; return; }
+  if (!_heroList.length) { box.innerHTML = '<p class="snote">No photos yet — add some below.</p>'; return; }
+  box.innerHTML = _heroList.map((h,i) => `
+    <div style="display:flex;gap:0.75rem;align-items:center;padding:0.6rem;border:1.5px solid var(--sand);border-radius:4px;margin-bottom:0.5rem;background:var(--white);">
+      <img src="${h.photo_url}" style="width:110px;height:64px;object-fit:cover;border-radius:3px;flex-shrink:0;">
+      <div style="flex:1;min-width:0;">
+        <input id="hcap-${h.id}" value="${(h.caption||'').replace(/"/g,'&quot;')}" placeholder="Caption (optional) — big text on the photo" class="sinput" style="margin-bottom:0.35rem;">
+        <div style="display:flex;gap:0.4rem;">
+          <button class="sbtn sbtn-save" style="padding:0.35rem 0.7rem;font-size:0.78rem;" onclick="saveHeroCaption(${h.id})">Save</button>
+          <button class="sbtn" style="padding:0.35rem 0.7rem;font-size:0.78rem;" onclick="moveHero(${h.id},-1)" ${i===0?'disabled':''}>↑</button>
+          <button class="sbtn" style="padding:0.35rem 0.7rem;font-size:0.78rem;" onclick="moveHero(${h.id},1)" ${i===_heroList.length-1?'disabled':''}>↓</button>
+          <button class="sbtn" style="padding:0.35rem 0.7rem;font-size:0.78rem;color:var(--declined);" onclick="deleteHero(${h.id})">Delete</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function uploadHeroSlides(input) {
+  const files = input.files;
+  if (!files || !files.length) return;
+  showToast('Uploading…');
+  let order = _heroList.length ? Math.max(..._heroList.map(h=>h.sort_order||0)) + 1 : 0;
+  for (let i=0;i<files.length;i++) {
+    const url = await uploadPhoto(files[i], 'hero');
+    await fetch(`${SURL}/rest/v1/hero_photos`, {
+      method:'POST', headers:JHDRS,
+      body: JSON.stringify({photo_url:url, sort_order:order++, active:true})
+    });
+  }
+  input.value = '';
+  await loadHeroSlides();
+  showToast('✓ Photos added!');
+}
+
+async function saveHeroCaption(id) {
+  const v = document.getElementById('hcap-'+id).value;
+  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${id}`, {
+    method:'PATCH', headers:JHDRS, body: JSON.stringify({caption:v})
+  });
+  showToast('✓ Caption saved!');
+}
+
+async function deleteHero(id) {
+  if (!confirm('Delete this photo from the slideshow?')) return;
+  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${id}`, {method:'DELETE', headers:JHDRS});
+  await loadHeroSlides();
+  showToast('Photo removed');
+}
+
+async function moveHero(id, dir) {
+  const i = _heroList.findIndex(h=>h.id===id);
+  const j = i + dir;
+  if (i<0 || j<0 || j>=_heroList.length) return;
+  const a = _heroList[i], b = _heroList[j];
+  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${a.id}`, {method:'PATCH',headers:JHDRS,body:JSON.stringify({sort_order:j})});
+  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${b.id}`, {method:'PATCH',headers:JHDRS,body:JSON.stringify({sort_order:i})});
+  await loadHeroSlides();
 }
 
 async function uploadHeroPhoto(input) {
