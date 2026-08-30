@@ -1163,10 +1163,14 @@ async function loadHeroSlides() {
   const box = document.getElementById('hero-list');
   if (!box) return;
   try {
-    const r = await fetch(`${SURL}/rest/v1/hero_photos?select=*&order=sort_order`, {headers:HDRS});
+    const r = await fetch(`${SURL}/rest/v1/hero_photos?select=*&order=sort_order`, {headers:hdrs()});
     const d = await r.json();
-    _heroList = Array.isArray(d) ? d : [];
-  } catch(e) { box.innerHTML = '<p class="snote">Could not load photos.</p>'; return; }
+    if (!Array.isArray(d)) {
+      box.innerHTML = '<p class="snote" style="color:var(--declined);">' + (d.message || 'Table not found') + '</p>';
+      _heroList = []; return;
+    }
+    _heroList = d;
+  } catch(e) { box.innerHTML = '<p class="snote" style="color:var(--declined);">Could not load photos — has the hero_photos table been created?</p>'; return; }
   if (!_heroList.length) { box.innerHTML = '<p class="snote">No photos yet — add some below.</p>'; return; }
   box.innerHTML = _heroList.map((h,i) => `
     <div style="display:flex;gap:0.75rem;align-items:center;padding:0.6rem;border:1.5px solid var(--sand);border-radius:4px;margin-bottom:0.5rem;background:var(--white);">
@@ -1188,29 +1192,37 @@ async function uploadHeroSlides(input) {
   if (!files || !files.length) return;
   showToast('Uploading…');
   let order = _heroList.length ? Math.max(..._heroList.map(h=>h.sort_order||0)) + 1 : 0;
+  let ok = 0;
   for (let i=0;i<files.length;i++) {
     const url = await uploadPhoto(files[i], 'hero');
-    await fetch(`${SURL}/rest/v1/hero_photos`, {
-      method:'POST', headers:JHDRS,
+    if (!url) { alert('Photo upload failed (storage). Check the "photos" bucket exists and is public.'); continue; }
+    const r = await fetch(`${SURL}/rest/v1/hero_photos`, {
+      method:'POST', headers:jhdrs(),
       body: JSON.stringify({photo_url:url, sort_order:order++, active:true})
     });
+    if (!r.ok) {
+      const msg = await r.text();
+      alert('Could not save to database:\n\n' + msg + '\n\nMost likely the hero_photos table SQL has not been run yet.');
+      break;
+    }
+    ok++;
   }
   input.value = '';
   await loadHeroSlides();
-  showToast('✓ Photos added!');
+  if (ok) showToast('✓ ' + ok + ' photo' + (ok>1?'s':'') + ' added!');
 }
 
 async function saveHeroCaption(id) {
   const v = document.getElementById('hcap-'+id).value;
   await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${id}`, {
-    method:'PATCH', headers:JHDRS, body: JSON.stringify({caption:v})
+    method:'PATCH', headers:jhdrs(), body: JSON.stringify({caption:v})
   });
   showToast('✓ Caption saved!');
 }
 
 async function deleteHero(id) {
   if (!confirm('Delete this photo from the slideshow?')) return;
-  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${id}`, {method:'DELETE', headers:JHDRS});
+  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${id}`, {method:'DELETE', headers:jhdrs()});
   await loadHeroSlides();
   showToast('Photo removed');
 }
@@ -1220,8 +1232,8 @@ async function moveHero(id, dir) {
   const j = i + dir;
   if (i<0 || j<0 || j>=_heroList.length) return;
   const a = _heroList[i], b = _heroList[j];
-  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${a.id}`, {method:'PATCH',headers:JHDRS,body:JSON.stringify({sort_order:j})});
-  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${b.id}`, {method:'PATCH',headers:JHDRS,body:JSON.stringify({sort_order:i})});
+  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${a.id}`, {method:'PATCH',headers:jhdrs(),body:JSON.stringify({sort_order:j})});
+  await fetch(`${SURL}/rest/v1/hero_photos?id=eq.${b.id}`, {method:'PATCH',headers:jhdrs(),body:JSON.stringify({sort_order:i})});
   await loadHeroSlides();
 }
 
