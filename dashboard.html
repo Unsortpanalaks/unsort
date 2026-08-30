@@ -376,8 +376,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
         <div class="scard-body">
           <div id="hero-list" style="margin-bottom:0.9rem;"><p class="snote">Loading…</p></div>
           <label class="slabel">Add photos</label>
-          <input type="file" accept="image/*" multiple onchange="uploadHeroSlides(this)" style="font-size:0.82rem;">
+          <input type="file" id="hero-file-input" accept="image/*" multiple style="font-size:0.82rem;">
           <p class="snote">Wide landscape photos, at least 1600px wide. You can select several at once.</p>
+        </div>
+        <div class="scard-actions">
+          <button class="sbtn sbtn-save" onclick="uploadHeroSlides(document.getElementById('hero-file-input'))">Upload photos</button>
         </div>
       </div>
 
@@ -1189,7 +1192,7 @@ async function loadHeroSlides() {
 
 async function uploadHeroSlides(input) {
   const files = input.files;
-  if (!files || !files.length) return;
+  if (!files || !files.length) { alert('Choose one or more photos first.'); return; }
   showToast('Uploading…');
   let order = _heroList.length ? Math.max(..._heroList.map(h=>h.sort_order||0)) + 1 : 0;
   let ok = 0;
