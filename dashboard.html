@@ -376,7 +376,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
         <div class="scard-body">
           <div id="hero-list" style="margin-bottom:0.9rem;"><p class="snote">Loading…</p></div>
           <label class="slabel">Add photos</label>
-          <input type="file" id="hero-file-input" accept="image/*" multiple style="font-size:0.82rem;">
+          <input type="file" id="hero-file-input" accept=".jpg,.jpeg,.jfif,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" multiple style="font-size:0.82rem;">
           <p class="snote">Wide landscape photos, at least 1600px wide. You can select several at once.</p>
         </div>
         <div class="scard-actions">
@@ -572,7 +572,7 @@ function renderTours() {
         <div style="margin-top:0.5rem;">
           <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;">Photos</div>
           <div id="t-photos-${t.id}" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;"></div>
-          <input type="file" accept="image/*" multiple onchange="uploadTourPhotos('${t.id}',this)" style="font-size:0.8rem;">
+          <input type="file" accept=".jpg,.jpeg,.jfif,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" multiple onchange="uploadTourPhotos('${t.id}',this)" style="font-size:0.8rem;">
         </div>
       </div>
       <div class="cform-actions">
@@ -655,7 +655,7 @@ function openArticleForm(id) {
         </div>
         <div class="cform-row">
           <label>Photo</label>
-          <input type="file" id="af-photo" accept="image/*" onchange="previewPhoto(this,'af-preview')">
+          <input type="file" id="af-photo" accept=".jpg,.jpeg,.jfif,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" onchange="previewPhoto(this,'af-preview')">
           ${a&&a.photo_url?`<img id="af-preview" src="${a.photo_url}" class="photo-preview">`:`<img id="af-preview" class="photo-preview" style="display:none;">`}
         </div>
         <div class="cform-row"><label>Visible on website</label>
@@ -683,14 +683,30 @@ function previewPhoto(input, previewId) {
 }
 
 async function uploadPhoto(file, folder) {
-  const ext = file.name.split('.').pop();
-  const path = folder + '/' + Date.now() + '.' + ext;
+  let ext = (file.name.split('.').pop() || '').toLowerCase();
+  let type = file.type || '';
+
+  // JFIF / JPE / JPEG variants are all plain JPEG — normalise so browsers display them
+  if (['jfif','jpe','jpeg','jpg'].includes(ext)) { ext = 'jpg'; type = 'image/jpeg'; }
+  else if (ext === 'png')  type = 'image/png';
+  else if (ext === 'webp') type = 'image/webp';
+  else if (ext === 'gif')  type = 'image/gif';
+  else if (['heic','heif'].includes(ext)) {
+    alert('HEIC/HEIF photos (from iPhone) do not display in web browsers.\n\nOn iPhone: Settings → Camera → Formats → "Most Compatible", or export the photo as JPEG first.');
+    return null;
+  }
+  if (!type || type === 'application/octet-stream') type = 'image/jpeg';
+
+  const path = folder + '/' + Date.now() + '-' + Math.random().toString(36).slice(2,7) + '.' + ext;
   const r = await fetch(`${SURL}/storage/v1/object/photos/${path}`, {
     method: 'POST',
-    headers: { 'apikey': SKEY, 'Authorization': 'Bearer ' + SKEY, 'Content-Type': file.type },
+    headers: { 'apikey': SKEY, 'Authorization': 'Bearer ' + SKEY, 'Content-Type': type, 'x-upsert': 'true' },
     body: file
   });
-  if (!r.ok) return null;
+  if (!r.ok) {
+    console.error('Upload failed:', await r.text());
+    return null;
+  }
   return `${SURL}/storage/v1/object/public/photos/${path}`;
 }
 
@@ -757,7 +773,7 @@ function openGuideForm(id) {
       <div class="cform-body">
         <div class="cform-row">
           <label>Profile photo</label>
-          <input type="file" id="gf-photo" accept="image/*" onchange="previewPhoto(this,'gf-preview')">
+          <input type="file" id="gf-photo" accept=".jpg,.jpeg,.jfif,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" onchange="previewPhoto(this,'gf-preview')">
           ${g&&g.photo_url?`<img id="gf-preview" src="${g.photo_url}" class="photo-preview" style="border-radius:50%;">`:`<img id="gf-preview" class="photo-preview" style="display:none;border-radius:50%;">`}
         </div>
         <div class="cform-row"><label>Full name</label><input id="gf-name" value="${g?g.name:''}"></div>
