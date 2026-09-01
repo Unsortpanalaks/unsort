@@ -26,11 +26,11 @@ h1,h2,h3{font-family:'Barlow Condensed',sans-serif;}
 .masthead{padding:2rem 3rem 1.2rem;text-align:center;background:#FFFFFF;border-bottom:3px solid var(--blue);}
 .logo-svg{width:100%;max-width:460px;height:auto;display:block;margin:0 auto;}
 .logo-svg .ink path{fill:var(--blue);}
-.logo-svg .sweep{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:logoDraw 2.3s cubic-bezier(.55,.06,.3,1) .5s forwards;}
+.logo-svg .sweep{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:logoDraw 2.1s cubic-bezier(.55,.06,.3,1) 1.65s forwards;}
 .logo-svg .wipe{transform-box:fill-box;transform-origin:left center;transform:scaleX(0);}
 .logo-svg .w-here{animation:logoWipe .4s cubic-bezier(.4,0,.2,1) 0s forwards;}
-.logo-svg .w-every{animation:logoWipe .7s cubic-bezier(.4,0,.2,1) .15s forwards;}
-.logo-svg .w-copen{animation:logoWipe .55s cubic-bezier(.4,0,.2,1) 2.6s forwards;}
+.logo-svg .w-every{animation:logoWipe .7s cubic-bezier(.4,0,.2,1) .35s forwards;}
+.logo-svg .w-copen{animation:logoWipe .55s cubic-bezier(.4,0,.2,1) 1.05s forwards;}
 @keyframes logoDraw{to{stroke-dashoffset:0;}}
 @keyframes logoWipe{to{transform:scaleX(1);}}
 @media (prefers-reduced-motion:reduce){
