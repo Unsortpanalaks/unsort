@@ -447,6 +447,24 @@ let bookings=[], trashed=[], cfg={};
 let filter='all', curM=new Date().getMonth(), curY=new Date().getFullYear();
 let selId=null, selectedDate=null;
 
+async function saveJSON(url, body, method) {
+  let payload = Object.assign({}, body);
+  let dropped = [];
+  for (let i = 0; i < 5; i++) {
+    const r = await fetch(url, {method: method || 'PATCH', headers: jhdrs(), body: JSON.stringify(payload)});
+    if (r.ok) return {ok: true, dropped: dropped};
+    const txt = await r.text();
+    const m = txt.match(/Could not find the '([^']+)' column/i);
+    if (m && Object.prototype.hasOwnProperty.call(payload, m[1])) {
+      dropped.push(m[1]);
+      delete payload[m[1]];
+      continue;
+    }
+    return {ok: false, status: r.status, msg: txt, dropped: dropped};
+  }
+  return {ok: false, status: 0, msg: 'Too many unknown columns', dropped: dropped};
+}
+
 async function showError(r) {
   let msg = '';
   try { msg = await r.text(); } catch(e) {}
@@ -607,9 +625,16 @@ async function saveTour(id) {
     what_to_expect: document.getElementById('t-wte-'+id).value,
     meeting_point: document.getElementById('t-mp-'+id).value,
   };
-  const r = await fetch(`${SURL}/rest/v1/tours?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify(body)});
-  if(r.ok) { showToast('Tour saved!'); await loadContent(); }
-  else showError(r);
+  const res = await saveJSON(`${SURL}/rest/v1/tours?id=eq.${id}`, body);
+  if (res.ok) {
+    showToast(res.dropped.length
+      ? 'Tour saved — but these fields need a database update first: ' + res.dropped.join(', ')
+      : 'Tour saved!');
+    await loadContent();
+  } else {
+    console.error('Save failed:', res.status, res.msg);
+    alert('Could not save the tour.\n\n' + (res.msg || ('HTTP ' + res.status)));
+  }
 }
 
 // Load tour photos after rendering
