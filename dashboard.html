@@ -447,6 +447,17 @@ let bookings=[], trashed=[], cfg={};
 let filter='all', curM=new Date().getMonth(), curY=new Date().getFullYear();
 let selId=null, selectedDate=null;
 
+async function showError(r) {
+  let msg = '';
+  try { msg = await r.text(); } catch(e) {}
+  console.error('Supabase error:', r.status, msg);
+  let hint = '';
+  if (/column|schema cache/i.test(msg)) hint = '\n\nThis means the database is missing a column. Send this message to Claude and it will give you the SQL to fix it.';
+  else if (r.status === 401 || r.status === 403) hint = '\n\nPermission denied — check the table policies in Supabase.';
+  else if (r.status === 0 || !r.status) hint = '\n\nCould not reach Supabase. The project may be paused.';
+  alert('Could not save.\n\n' + (msg || ('HTTP ' + r.status)) + hint);
+}
+
 function hdrs(extra={}) { return {'apikey':SKEY,'Authorization':'Bearer '+SKEY,...extra}; }
 function jhdrs() { return hdrs({'Content-Type':'application/json','Prefer':'return=representation'}); }
 
@@ -589,16 +600,16 @@ async function saveTour(id) {
     duration: document.getElementById('t-dur-'+id).value,
     max_group: parseInt(document.getElementById('t-max-'+id).value),
     price_dkk: parseInt(document.getElementById('t-price-'+id).value),
-    tagline: document.getElementById('t-tagline-'+id).value,
-    story: document.getElementById('t-story-'+id).value,
-    category: document.getElementById('t-cat-'+id).value,
+    tagline: (document.getElementById('t-tagline-'+id)||{}).value,
+    story: (document.getElementById('t-story-'+id)||{}).value,
+    category: (document.getElementById('t-cat-'+id)||{}).value,
     highlights: document.getElementById('t-hl-'+id).value,
     what_to_expect: document.getElementById('t-wte-'+id).value,
     meeting_point: document.getElementById('t-mp-'+id).value,
   };
   const r = await fetch(`${SURL}/rest/v1/tours?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify(body)});
   if(r.ok) { showToast('Tour saved!'); await loadContent(); }
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 // Load tour photos after rendering
@@ -611,6 +622,7 @@ renderTours = function() {
 async function toggleTour(id, current) {
   const r = await fetch(`${SURL}/rest/v1/tours?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify({active:!current})});
   if(r.ok) { showToast('Tour '+(current?'hidden':'shown')+'!'); await loadContent(); }
+  else await showError(r);
 }
 
 // ARTICLES
@@ -732,14 +744,14 @@ async function saveArticle(id) {
     r = await fetch(`${SURL}/rest/v1/articles`, {method:'POST', headers:jhdrs(), body:JSON.stringify(body)});
   }
   if(r.ok) { showToast('Article saved!'); await loadContent(); renderArticles(); }
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 async function deleteArticle(id) {
   if(!confirm('Delete this article permanently?')) return;
   const r = await fetch(`${SURL}/rest/v1/articles?id=eq.${id}`, {method:'DELETE', headers:hdrs()});
   if(r.ok) { showToast('Article deleted.'); await loadContent(); renderArticles(); }
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 // GUIDES
@@ -814,14 +826,14 @@ async function saveGuide(id) {
     r = await fetch(`${SURL}/rest/v1/guides`, {method:'POST', headers:jhdrs(), body:JSON.stringify(body)});
   }
   if(r.ok) { showToast('Guide saved!'); await loadContent(); renderGuides(); }
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 async function deleteGuide(id) {
   if(!confirm('Delete this guide permanently?')) return;
   const r = await fetch(`${SURL}/rest/v1/guides?id=eq.${id}`, {method:'DELETE', headers:hdrs()});
   if(r.ok) { showToast('Guide deleted.'); await loadContent(); renderGuides(); }
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 // STATS
@@ -901,7 +913,7 @@ function renderDetail(b) {
 async function updStatus(id,status) {
   const r=await fetch(`${SURL}/rest/v1/bookings?id=eq.${id}`,{method:'PATCH',headers:jhdrs(),body:JSON.stringify({status})});
   if(r.ok){showToast('Booking '+status+'!');await load();const b=bookings.find(x=>x.id===id);if(b)renderDetail(b);}
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 async function toTrash(id) {
@@ -912,7 +924,7 @@ async function toTrash(id) {
     selId=null;
     document.getElementById('detail-area').innerHTML='<div class="detail-hint">Click a booking or date to see details</div>';
     await load();
-  } else showToast('Something went wrong.');
+  } else showError(r);
 }
 
 // TRASH
@@ -940,14 +952,14 @@ function renderTrash() {
 async function restoreB(id) {
   const r=await fetch(`${SURL}/rest/v1/bookings?id=eq.${id}`,{method:'PATCH',headers:jhdrs(),body:JSON.stringify({deleted_at:null})});
   if(r.ok){showToast('Booking restored!');await load();renderTrash();}
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 async function deleteB(id) {
   if(!confirm('Permanently delete? Cannot be undone.')) return;
   const r=await fetch(`${SURL}/rest/v1/bookings?id=eq.${id}`,{method:'DELETE',headers:hdrs()});
   if(r.ok){showToast('Permanently deleted.');await load();renderTrash();}
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 // SETTINGS
@@ -962,7 +974,7 @@ async function saveSetting(key,value) {
   const body=exists?{value}:{key,value};
   const r=await fetch(url,{method:exists?'PATCH':'POST',headers:jhdrs(),body:JSON.stringify(body)});
   if(r.ok){cfg[key]=value;showToast('✓ Saved!');if(key==='dashboard_password')document.getElementById('setting-password').value='';}
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 // CALENDAR
@@ -1129,14 +1141,14 @@ async function saveReview(id) {
   if (id) r = await fetch(`${SURL}/rest/v1/reviews?id=eq.${id}`, {method:'PATCH', headers:jhdrs(), body:JSON.stringify(body)});
   else r = await fetch(`${SURL}/rest/v1/reviews`, {method:'POST', headers:jhdrs(), body:JSON.stringify(body)});
   if (r.ok) { showToast('Review saved!'); await loadReviews(); document.getElementById('review-form').style.display='none'; }
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 async function deleteReview(id) {
   if (!confirm('Delete this review?')) return;
   const r = await fetch(`${SURL}/rest/v1/reviews?id=eq.${id}`, {method:'DELETE', headers:hdrs()});
   if (r.ok) { showToast('Review deleted.'); await loadReviews(); }
-  else showToast('Something went wrong.');
+  else showError(r);
 }
 
 async function loadTourPhotos(tourId) {
