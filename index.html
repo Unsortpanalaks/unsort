@@ -621,13 +621,14 @@ const JHDRS = { ...HDRS, 'Content-Type': 'application/json', 'Prefer': 'return=m
 // ── CAPACITY ──
 let capacityCache = {};
 const MAX_CAP = 10;
-let blockedSlots = {};
+let openSlots = {};
+let openLoaded = false;
 async function fetchBlocks() {
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/slot_blocks?select=tour_date,slot`, {headers:HDRS});
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/slot_openings?select=tour_date,slot`, {headers:HDRS});
     const d = await r.json();
-    blockedSlots = {};
-    if (Array.isArray(d)) d.forEach(x => blockedSlots[x.tour_date+'|'+x.slot] = true);
+    openSlots = {};
+    if (Array.isArray(d)) { d.forEach(x => openSlots[x.tour_date+'|'+x.slot] = true); openLoaded = true; }
   } catch(e){}
 }
 
@@ -643,7 +644,7 @@ function getRemaining(date, slot) {
   const k = date+'|'+slot;
   return capacityCache[k] ? Math.max(0, capacityCache[k].remaining) : MAX_CAP;
 }
-function isSlotClosed(date, slot) { return !!blockedSlots[date+'|'+slot]; }
+function isSlotClosed(date, slot) { return openLoaded && !openSlots[date+'|'+slot]; }
 function isBlocked(date, slot) { return isSlotClosed(date, slot) || getRemaining(date, slot) <= 0; }
 function checkAvailability() {
   const date = document.getElementById('f-date').value;
@@ -653,7 +654,7 @@ function checkAvailability() {
   badge.style.display = 'block';
   if (isSlotClosed(date, slot)) {
     badge.style.cssText = 'display:block;padding:0.6rem 1rem;font-size:0.85rem;font-weight:600;margin-top:0.5rem;background:#FCEBEB;color:#A32D2D;';
-    badge.textContent = 'Not running on this date — please choose another day or time.';
+    badge.textContent = 'Not available on this date — please choose another day or time.';
     return;
   }
   const rem = getRemaining(date, slot);
@@ -1274,7 +1275,7 @@ function goStep2() {
   if(!tour){alert('Please select a tour.');return;}
   if(!date){alert('Please choose a date.');return;}
   if(!slot){alert('Please choose a time slot.');return;}
-  if(isSlotClosed(date,slot)){alert('Sorry, we are not running that session on this date. Please choose another day or time.');return;}
+  if(isSlotClosed(date,slot)){alert('Sorry, that session is not available on this date. Please choose another day or time.');return;}
   if(isBlocked(date,slot)){alert('Sorry, this slot is fully booked. Please choose another date or time.');return;}
   goStep(2);
 }
