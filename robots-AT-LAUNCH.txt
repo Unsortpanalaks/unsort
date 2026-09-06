@@ -1,0 +1,5 @@
+# LAUNCH VERSION - rename this file to robots.txt when you go live.
+User-agent: *
+Allow: /
+
+Sitemap: https://hereeverythingcopenhagen.com/sitemap.xml

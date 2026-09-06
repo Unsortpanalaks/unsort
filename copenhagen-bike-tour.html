@@ -2,6 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+/* PREVIEW GATE - remove this block at launch to make the site public.
+   Unlock:  add  ?preview=hafssa2026  to any page URL (stays unlocked on this device)
+   Re-lock: add  ?preview=off                                            */
+(function(){
+  var PASS = 'hafssa2026', KEY = 'hec_preview_ok';
+  var q = new URLSearchParams(location.search);
+  try {
+    if (q.get('preview') === PASS)  localStorage.setItem(KEY, '1');
+    if (q.get('preview') === 'off') localStorage.removeItem(KEY);
+    if (localStorage.getItem(KEY) === '1') return;
+  } catch (e) { return; }          // storage blocked: fail open, don't lock people out
+  location.replace('/coming-soon');
+})();
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Copenhagen Bike Tour — Ride the City Like a Local | Here Everything Copenhagen</title>
 <meta name="description" content="A Copenhagen bike tour on the city&#x27;s own cycle lanes. Harbour, neighbourhoods and backstreets in three hours. Small groups, bikes included.">

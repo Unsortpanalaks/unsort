@@ -1,4 +1,4 @@
+# Site not launched yet - blocking crawlers until go-live.
+# AT LAUNCH: replace this file with the launch version (Allow + Sitemap).
 User-agent: *
-Allow: /
-
-Sitemap: https://hereeverythingcopenhagen.com/sitemap.xml
+Disallow: /
