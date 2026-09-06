@@ -560,6 +560,10 @@ h1,h2,h3{font-family:'Barlow Condensed',sans-serif;}
       <div style="text-align:center;padding:2rem 0;">
         <div style="font-size:2rem;margin-bottom:1rem;">✦</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;color:var(--ink);margin-bottom:0.5rem;">Booking request sent!</div>
+        <div id="done-ref" style="display:none;margin:1rem auto 1.2rem;padding:0.9rem 1.2rem;background:#FFFFFF;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--blue);max-width:280px;">
+          <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--blue);font-weight:700;margin-bottom:0.25rem;">Your reference</div>
+          <div id="done-ref-code" style="font-family:'Courier New',monospace;font-size:1.6rem;font-weight:700;letter-spacing:0.18em;color:var(--ink);"></div>
+        </div>
         <div style="font-size:0.88rem;color:var(--muted);font-family:'Archivo',sans-serif;line-height:1.7;">Your guide will review and confirm within 24 hours.<br>Check your inbox — a confirmation email is on its way.</div>
       </div>
     </div>
@@ -1302,9 +1306,19 @@ async function submitBooking() {
     action_token:token
   };
   try {
-    const r=await fetch(`${SUPABASE_URL}/rest/v1/bookings`,{method:'POST',headers:JHDRS,body:JSON.stringify(body)});
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/bookings`,{
+      method:'POST',
+      headers:{...HDRS,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify(body)
+    });
     if(r.ok||r.status===201){
+      let ref='';
+      try{ const rows=await r.json(); if(Array.isArray(rows)&&rows[0]&&rows[0].booking_ref) ref=rows[0].booking_ref; }catch(e){}
       await fetch(FUNCTION_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(ref){
+        document.getElementById('done-ref-code').textContent=ref;
+        document.getElementById('done-ref').style.display='block';
+      }
       goStep('done');
     } else {
       btn.textContent='Send booking request →'; btn.disabled=false;

@@ -888,7 +888,7 @@ function renderList() {
     const s=b.slot==='morning'?'🌅':'🌇';
     return `<div class="booking-item ${selId===b.id?'selected':''}" onclick="selBooking('${b.id}')">
       <div class="bi-top">
-        <div><div class="bi-name">${b.first_name} ${b.last_name}</div><div class="bi-num">#${b.booking_number||'–'}</div></div>
+        <div><div class="bi-name">${b.first_name} ${b.last_name}</div><div class="bi-num">${b.booking_ref||('#'+(b.booking_number||'–'))}</div></div>
         <span class="sbadge s-${b.status}">${b.status}</span>
       </div>
       <div class="bi-meta">${d} · ${s} ${b.slot==='morning'?'Morning':'Afternoon'} · ${b.group_size} pax</div>
@@ -918,7 +918,7 @@ function renderDetail(b) {
       <div class="dc-head">
         <h2>${b.first_name} ${b.last_name}</h2>
         <div style="display:flex;align-items:center;gap:0.6rem;">
-          <div class="dc-num">Booking #${b.booking_number||'–'}</div>
+          <div class="dc-num">Ref ${b.booking_ref||('#'+(b.booking_number||'–'))}</div>
           <span class="sbadge s-${b.status}">${b.status}</span>
         </div>
       </div>
@@ -962,7 +962,7 @@ function renderTrash() {
     const dc=days<10?'color:var(--declined)':'color:var(--muted)';
     return `<div class="trash-item">
       <div class="ti-info">
-        <div class="ti-name">${b.first_name} ${b.last_name} <span class="ti-num">#${b.booking_number||'–'}</span></div>
+        <div class="ti-name">${b.first_name} ${b.last_name} <span class="ti-num">${b.booking_ref||('#'+(b.booking_number||'–'))}</span></div>
         <div class="ti-meta">${d} · ${b.slot==='morning'?'Morning':'Afternoon'} · ${TOURS[b.tour_type]||b.tour_type}<br>${b.email}</div>
       </div>
       <div class="ti-days" style="${dc}">${days}d left</div>
@@ -1052,7 +1052,7 @@ function selectDate(ds) {
       : slotBookings.map(bk => `
         <div class="day-slot" onclick="selBooking('${bk.id}')" style="cursor:pointer;">
           <div class="ds-info" style="flex:1;">
-            <div class="ds-name">${bk.first_name} ${bk.last_name} <span style="font-size:0.65rem;color:var(--muted);">#${bk.booking_number||'–'}</span></div>
+            <div class="ds-name">${bk.first_name} ${bk.last_name} <span style="font-size:0.65rem;color:var(--muted);">${bk.booking_ref||('#'+(bk.booking_number||'–'))}</span></div>
             <div class="ds-tour">${TOURS[bk.tour_type]||bk.tour_type} · ${bk.group_size} pax · <a href="mailto:${bk.email}" style="color:var(--rust);font-size:0.7rem;">${bk.email}</a></div>
             ${bk.notes?`<div style="font-size:0.7rem;color:var(--muted);font-style:italic;margin-top:0.15rem;">📝 ${bk.notes}</div>`:''}
           </div>
