@@ -3,20 +3,15 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/booking/respond",
-      "destination": "https://mzcsiqquiigetvwivnhy.supabase.co/functions/v1/booking-action"
-    },
-    {
       "source": "/api/booking-action",
       "destination": "https://mzcsiqquiigetvwivnhy.supabase.co/functions/v1/booking-action"
     }
   ],
   "headers": [
     {
-      "source": "/booking/(.*)",
+      "source": "/booking-respond",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" },
-        { "key": "CDN-Cache-Control", "value": "no-store" },
         { "key": "Vercel-CDN-Cache-Control", "value": "no-store" }
       ]
     },
@@ -24,7 +19,6 @@
       "source": "/api/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" },
-        { "key": "CDN-Cache-Control", "value": "no-store" },
         { "key": "Vercel-CDN-Cache-Control", "value": "no-store" }
       ]
     }
