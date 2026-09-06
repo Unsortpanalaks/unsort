@@ -446,6 +446,7 @@ const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 let bookings=[], trashed=[], cfg={};
 let filter='all', curM=new Date().getMonth(), curY=new Date().getFullYear();
 let selId=null, selectedDate=null;
+let blockedSlots = {};   // "YYYY-MM-DD|slot" -> true
 
 async function saveJSON(url, body, method) {
   let payload = Object.assign({}, body);
@@ -517,6 +518,7 @@ async function init() { await load(); setInterval(load,30000); }
 
 async function load() {
     await fetchCapacity();
+    await loadBlocks();
   const [b,t,s] = await Promise.all([
     fetch(`${SURL}/rest/v1/bookings?select=*&deleted_at=is.null&order=tour_date.asc,created_at.desc`,{headers:hdrs()}).then(r=>r.json()),
     fetch(`${SURL}/rest/v1/bookings?select=*&deleted_at=not.is.null&order=deleted_at.desc`,{headers:hdrs()}).then(r=>r.json()),
@@ -1009,6 +1011,36 @@ function changeMonth(d) {
   if(curM<0){curM=11;curY--;}
   renderCal();
 }
+async function loadBlocks() {
+  try {
+    const r = await fetch(`${SURL}/rest/v1/slot_blocks?select=tour_date,slot`, {headers:hdrs()});
+    const d = await r.json();
+    blockedSlots = {};
+    if (Array.isArray(d)) d.forEach(x => blockedSlots[x.tour_date + '|' + x.slot] = true);
+  } catch(e) { console.error('loadBlocks', e); }
+}
+
+async function toggleSlot(ds, slot) {
+  const key = ds + '|' + slot;
+  const isBlocked = !!blockedSlots[key];
+  let r;
+  if (isBlocked) {
+    r = await fetch(`${SURL}/rest/v1/slot_blocks?tour_date=eq.${ds}&slot=eq.${slot}`,
+                    {method:'DELETE', headers:jhdrs()});
+  } else {
+    r = await fetch(`${SURL}/rest/v1/slot_blocks`, {
+      method:'POST', headers:jhdrs(),
+      body: JSON.stringify({tour_date: ds, slot: slot})
+    });
+  }
+  if (!r.ok) { await showError(r); return; }
+  blockedSlots[key] = !isBlocked;
+  showToast(isBlocked ? 'Session opened' : 'Session closed');
+  await loadBlocks();
+  renderCal();
+  selectDate(ds);
+}
+
 function renderCal() {
   document.getElementById('cal-title').textContent=`${MONTHS[curM]} ${curY}`;
   const grid=document.getElementById('cal-grid');
@@ -1021,9 +1053,13 @@ function renderCal() {
     const db=bookings.filter(b=>b.tour_date===ds);
     const isT=today.getDate()===day&&today.getMonth()===curM&&today.getFullYear()===curY;
     const isSel=selectedDate===ds;
+    const bothClosed = blockedSlots[ds+'|morning'] && blockedSlots[ds+'|afternoon'];
+    const someClosed = blockedSlots[ds+'|morning'] || blockedSlots[ds+'|afternoon'];
     const dots=db.map(b=>`<div class="cal-dot ${b.status}"></div>`).join('');
-    h+=`<div class="cal-day ${isT?'today':''} ${isSel?'sel':''}" onclick="selectDate('${ds}')">
-      <div class="cal-dn">${day}</div>
+    h+=`<div class="cal-day ${isT?'today':''} ${isSel?'sel':''}" onclick="selectDate('${ds}')"
+      style="${bothClosed?'background:repeating-linear-gradient(45deg,#F2F2F2,#F2F2F2 4px,#E4E4E4 4px,#E4E4E4 8px);':someClosed?'box-shadow:inset 0 -3px 0 var(--declined);':''}"
+      title="${bothClosed?'Both sessions closed':someClosed?'One session closed':''}">
+      <div class="cal-dn" style="${bothClosed?'color:#9A9A9A;text-decoration:line-through;':''}">${day}</div>
       ${dots?`<div class="cal-dots">${dots}</div>`:''}
     </div>`;
   }
@@ -1060,9 +1096,20 @@ function selectDate(ds) {
         </div>`).join('');
     return `
       <div class="day-card" style="margin-bottom:1rem;">
-        <div class="day-head" style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="day-head" style="display:flex;justify-content:space-between;align-items:center;gap:0.6rem;flex-wrap:wrap;">
           <span>${slotName === 'Morning' ? '🌅 Morning — 9:30 am to 1:00 pm' : '🌇 Afternoon — 2:30 pm to 6:00 pm'}</span>
-          ${capInfo(slotKey)}
+          <span style="display:flex;align-items:center;gap:0.6rem;">
+            ${blockedSlots[slotKey]
+              ? '<span style="font-size:0.72rem;font-weight:700;color:var(--declined);">CLOSED</span>'
+              : capInfo(slotKey)}
+            <button onclick="event.stopPropagation();toggleSlot('${slotKey.split('|')[0]}','${slotKey.split('|')[1]}')"
+              style="border:2px solid ${blockedSlots[slotKey] ? 'var(--green)' : 'var(--declined)'};
+                     background:transparent;color:${blockedSlots[slotKey] ? 'var(--green)' : 'var(--declined)'};
+                     font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.78rem;
+                     text-transform:uppercase;letter-spacing:0.06em;padding:0.3rem 0.7rem;cursor:pointer;">
+              ${blockedSlots[slotKey] ? 'Open it' : 'Close it'}
+            </button>
+          </span>
         </div>
         ${bookingRows}
       </div>`;

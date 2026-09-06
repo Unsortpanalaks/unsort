@@ -621,6 +621,16 @@ const JHDRS = { ...HDRS, 'Content-Type': 'application/json', 'Prefer': 'return=m
 // ── CAPACITY ──
 let capacityCache = {};
 const MAX_CAP = 10;
+let blockedSlots = {};
+async function fetchBlocks() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/slot_blocks?select=tour_date,slot`, {headers:HDRS});
+    const d = await r.json();
+    blockedSlots = {};
+    if (Array.isArray(d)) d.forEach(x => blockedSlots[x.tour_date+'|'+x.slot] = true);
+  } catch(e){}
+}
+
 async function fetchCapacity() {
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/slot_capacity?select=tour_date,slot,booked,remaining`, {headers:HDRS});
@@ -633,13 +643,19 @@ function getRemaining(date, slot) {
   const k = date+'|'+slot;
   return capacityCache[k] ? Math.max(0, capacityCache[k].remaining) : MAX_CAP;
 }
-function isBlocked(date, slot) { return getRemaining(date, slot) <= 0; }
+function isSlotClosed(date, slot) { return !!blockedSlots[date+'|'+slot]; }
+function isBlocked(date, slot) { return isSlotClosed(date, slot) || getRemaining(date, slot) <= 0; }
 function checkAvailability() {
   const date = document.getElementById('f-date').value;
   const slot = document.getElementById('f-slot').value;
   const badge = document.getElementById('avail-status');
   if (!date || !slot) { badge.style.display='none'; return; }
   badge.style.display = 'block';
+  if (isSlotClosed(date, slot)) {
+    badge.style.cssText = 'display:block;padding:0.6rem 1rem;font-size:0.85rem;font-weight:600;margin-top:0.5rem;background:#FCEBEB;color:#A32D2D;';
+    badge.textContent = 'Not running on this date — please choose another day or time.';
+    return;
+  }
   const rem = getRemaining(date, slot);
   if (rem <= 0) {
     badge.style.cssText = 'display:block;padding:0.6rem 1rem;font-size:0.82rem;font-family:"DM Sans",sans-serif;margin-top:0.5rem;background:#FCEBEB;color:#A32D2D;';
@@ -655,6 +671,7 @@ function checkAvailability() {
 document.getElementById('f-date').addEventListener('change', checkAvailability);
 document.getElementById('f-slot').addEventListener('change', checkAvailability);
 fetchCapacity();
+fetchBlocks();
 
 // ── LOAD SITE CONTENT ──
 let _tours = [], _guides = [], _allReviews = [], _articles = [];
@@ -1257,6 +1274,7 @@ function goStep2() {
   if(!tour){alert('Please select a tour.');return;}
   if(!date){alert('Please choose a date.');return;}
   if(!slot){alert('Please choose a time slot.');return;}
+  if(isSlotClosed(date,slot)){alert('Sorry, we are not running that session on this date. Please choose another day or time.');return;}
   if(isBlocked(date,slot)){alert('Sorry, this slot is fully booked. Please choose another date or time.');return;}
   goStep(2);
 }
