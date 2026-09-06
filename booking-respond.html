@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Booking response — Here Everything Copenhagen</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,800;0,900;1,800;1,900&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Archivo',sans-serif;background:#B8D2E8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+  .card{background:#FFFFFF;border:3px solid #0A1030;max-width:480px;width:100%;overflow:hidden;box-shadow:8px 8px 0 #0D2BC8}
+  .card-header{background:#0A1030;padding:1.4rem 2rem}
+  .logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:1.5rem;color:#FFFFFF;text-transform:uppercase;letter-spacing:0.02em;line-height:1}
+  .logo span{color:#B8D2E8}
+  .card-body{padding:2.5rem 2rem;text-align:center}
+  .icon{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2.6rem;color:#0D2BC8;margin-bottom:0.6rem;line-height:1}
+  h1{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:2rem;text-transform:uppercase;color:#0A1030;margin-bottom:1rem;line-height:1}
+  p{font-size:1rem;color:#33414B;line-height:1.75}
+  .divider{width:56px;height:4px;background:#0D2BC8;margin:1.2rem auto}
+  .back-btn{display:inline-block;margin-top:1.6rem;background:#0D2BC8;color:#FFFFFF;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800;padding:0.85rem 1.9rem;letter-spacing:0.07em;text-transform:uppercase;border:2px solid #0D2BC8}
+  .muted{color:#51606B;font-size:0.9rem}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header"><div class="logo">Here Everything <span>Copenhagen</span></div></div>
+    <div class="card-body">
+      <div class="icon" id="icon">&hellip;</div>
+      <h1 id="title">Working on it</h1>
+      <div class="divider"></div>
+      <p id="message" class="muted">Updating the booking, one moment.</p>
+      <a href="/" class="back-btn">Back to website</a>
+    </div>
+  </div>
+
+<script>
+(async function () {
+  var FN = 'https://mzcsiqquiigetvwivnhy.supabase.co/functions/v1/booking-action';
+  var q = new URLSearchParams(location.search);
+  var token = q.get('token');
+  var action = q.get('action');
+
+  function show(icon, title, message) {
+    document.getElementById('icon').innerHTML = icon;
+    document.getElementById('title').textContent = title;
+    document.getElementById('message').textContent = message;
+    document.getElementById('message').className = '';
+    document.title = title + ' \u2014 Here Everything Copenhagen';
+  }
+
+  if (!token || (action !== 'accept' && action !== 'decline')) {
+    show('&#10005;', 'Invalid link', 'This link is invalid or has expired.');
+    return;
+  }
+
+  try {
+    var res = await fetch(FN + '?token=' + encodeURIComponent(token)
+                             + '&action=' + encodeURIComponent(action)
+                             + '&format=json', { cache: 'no-store' });
+    var data = await res.json();
+    show(data.icon || '&#10003;', data.title || 'Done', data.message || '');
+  } catch (e) {
+    show('&#10005;', 'Something went wrong',
+         'The booking could not be updated. Please open your dashboard and change it there.');
+  }
+})();
+</script>
+</body>
+</html>
