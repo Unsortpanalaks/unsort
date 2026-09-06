@@ -64,6 +64,33 @@ h1,h2,h3{font-family:'Barlow Condensed',sans-serif;}
 .hero-dot{width:30px;height:5px;background:rgba(255,255,255,0.45);border:none;padding:0;cursor:pointer;transition:background 0.2s;}
 .hero-dot.active{background:#FFFFFF;}
 
+
+/* ── BOOKING CALENDAR ── */
+.bcal{border:2px solid var(--ink);background:#FFFFFF;padding:0.8rem;}
+.bcal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;}
+.bcal-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;text-transform:uppercase;font-size:1.25rem;color:var(--ink);letter-spacing:0.02em;}
+.bcal-nav{width:32px;height:32px;border:2px solid var(--ink);background:#FFFFFF;color:var(--ink);cursor:pointer;font-size:0.95rem;line-height:1;}
+.bcal-nav:hover{background:var(--blue);border-color:var(--blue);color:#FFFFFF;}
+.bcal-nav:disabled{opacity:0.25;cursor:not-allowed;}
+.bcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.bcal-lbl{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);text-align:center;padding-bottom:0.3rem;}
+.bcal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.9rem;font-weight:600;border:2px solid transparent;background:#F4F4F4;color:#B4BCC4;cursor:not-allowed;position:relative;}
+.bcal-day.open{background:#FFFFFF;border-color:var(--ink);color:var(--ink);cursor:pointer;}
+.bcal-day.open:hover{background:var(--paper2);}
+.bcal-day.part{background:#FFFFFF;border-color:var(--border);color:var(--ink);cursor:pointer;}
+.bcal-day.part:hover{background:var(--paper2);}
+.bcal-day.sel{background:var(--blue);border-color:var(--blue);color:#FFFFFF;}
+.bcal-day.blank{background:transparent;border-color:transparent;cursor:default;}
+.bcal-dot{width:5px;height:5px;border-radius:50%;margin-top:2px;}
+.bcal-day.open .bcal-dot{background:var(--green);}
+.bcal-day.part .bcal-dot{background:var(--pending);}
+.bcal-day.sel .bcal-dot{background:#FFFFFF;}
+.bcal-key{display:flex;gap:0.9rem;flex-wrap:wrap;margin-top:0.7rem;font-size:0.72rem;color:var(--muted);font-weight:600;}
+.bcal-key span{display:flex;align-items:center;gap:0.3rem;}
+.bcal-key i{width:11px;height:11px;display:inline-block;border:2px solid var(--ink);}
+.bcal-key .k-part{border-color:var(--border);}
+.bcal-key .k-shut{background:#F4F4F4;border-color:#E2E2E2;}
+
 /* ── THREE COLUMN BODY ── */
 .body{display:grid;grid-template-columns:1.5fr 2px 2fr 2px 1fr;gap:2.5rem;padding:2.5rem 3rem;background:#FFFFFF;}
 .col-div{background:var(--paper);}
@@ -516,7 +543,20 @@ h1,h2,h3{font-family:'Barlow Condensed',sans-serif;}
       </div>
       <div class="form-row">
         <label>Preferred date</label>
-        <input type="date" id="f-date">
+        <input type="hidden" id="f-date">
+        <div class="bcal">
+          <div class="bcal-head">
+            <button type="button" class="bcal-nav" onclick="bcalMove(-1)" aria-label="Previous month">&larr;</button>
+            <div class="bcal-title" id="bcal-title"></div>
+            <button type="button" class="bcal-nav" onclick="bcalMove(1)" aria-label="Next month">&rarr;</button>
+          </div>
+          <div class="bcal-grid" id="bcal-grid"></div>
+          <div class="bcal-key">
+            <span><i class="k-open"></i> Available</span>
+            <span><i class="k-part"></i> One session only</span>
+            <span><i class="k-shut"></i> Not running</span>
+          </div>
+        </div>
       </div>
       <div class="form-row">
         <label>Time slot</label>
@@ -669,10 +709,86 @@ function checkAvailability() {
     badge.textContent = `✓ Available — ${rem} spots remaining`;
   }
 }
-document.getElementById('f-date').addEventListener('change', checkAvailability);
 document.getElementById('f-slot').addEventListener('change', checkAvailability);
-fetchCapacity();
-fetchBlocks();
+(async function(){
+  await fetchCapacity();
+  await fetchBlocks();
+  renderBcal();
+})();
+
+
+// ── BOOKING CALENDAR ──
+const BC_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const BC_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+let bcY = new Date().getFullYear(), bcM = new Date().getMonth();
+
+function bcalPad(n){ return String(n).padStart(2,'0'); }
+
+function bcalMove(dir){
+  const now = new Date();
+  const target = new Date(bcY, bcM + dir, 1);
+  if (target < new Date(now.getFullYear(), now.getMonth(), 1)) return;
+  bcY = target.getFullYear(); bcM = target.getMonth();
+  renderBcal();
+}
+
+function renderBcal(){
+  const t = document.getElementById('bcal-title');
+  const g = document.getElementById('bcal-grid');
+  if (!t || !g) return;
+  t.textContent = BC_MONTHS[bcM] + ' ' + bcY;
+
+  const now = new Date();
+  const todayStr = now.getFullYear() + '-' + bcalPad(now.getMonth()+1) + '-' + bcalPad(now.getDate());
+  const atStart = (bcY === now.getFullYear() && bcM === now.getMonth());
+  const prev = document.querySelector('.bcal-nav');
+  if (prev) prev.disabled = atStart;
+
+  const first = new Date(bcY, bcM, 1);
+  const lastDay = new Date(bcY, bcM + 1, 0).getDate();
+  let off = first.getDay() - 1; if (off < 0) off = 6;
+
+  let h = BC_DAYS.map(d => `<div class="bcal-lbl">${d}</div>`).join('');
+  for (let i = 0; i < off; i++) h += '<div class="bcal-day blank"></div>';
+
+  const chosen = document.getElementById('f-date').value;
+
+  for (let d = 1; d <= lastDay; d++){
+    const ds = bcY + '-' + bcalPad(bcM+1) + '-' + bcalPad(d);
+    const past = ds < todayStr;
+    const mOpen = !isSlotClosed(ds, 'morning') && getRemaining(ds,'morning') > 0;
+    const aOpen = !isSlotClosed(ds, 'afternoon') && getRemaining(ds,'afternoon') > 0;
+    const both = mOpen && aOpen, some = mOpen || aOpen;
+
+    let cls = 'bcal-day';
+    if (!past && both) cls += ' open';
+    else if (!past && some) cls += ' part';
+    if (ds === chosen) cls += ' sel';
+
+    const click = (!past && some) ? ` onclick="pickBdate('${ds}')"` : '';
+    const dot = (!past && some) ? '<span class="bcal-dot"></span>' : '';
+    h += `<div class="${cls}"${click}>${d}${dot}</div>`;
+  }
+  g.innerHTML = h;
+}
+
+function pickBdate(ds){
+  document.getElementById('f-date').value = ds;
+  renderBcal();
+  syncSlotOptions(ds);
+  checkAvailability();
+}
+
+function syncSlotOptions(ds){
+  const sel = document.getElementById('f-slot');
+  if (!sel) return;
+  const current = sel.value;
+  const opts = [['','Select a slot…']];
+  if (!isSlotClosed(ds,'morning')   && getRemaining(ds,'morning')   > 0) opts.push(['morning','Morning — 9:30 am to 1:00 pm']);
+  if (!isSlotClosed(ds,'afternoon') && getRemaining(ds,'afternoon') > 0) opts.push(['afternoon','Afternoon — 2:30 pm to 6:00 pm']);
+  sel.innerHTML = opts.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('');
+  if (opts.some(o => o[0] === current)) sel.value = current; else sel.value = '';
+}
 
 // ── LOAD SITE CONTENT ──
 let _tours = [], _guides = [], _allReviews = [], _articles = [];
@@ -1350,7 +1466,6 @@ async function submitBooking() {
 }
 
 // set min date to today
-document.getElementById('f-date').min = new Date().toISOString().split('T')[0];
 
 // Measure the oval stroke so the draw-on animation ends exactly at full length
 (function(){
